@@ -1,0 +1,129 @@
+db["businesses_merged"].aggregate([{
+                                       "$match" : {
+                                           "$expr" : {
+                                               "$gte" : [{"$size" : "$reviews"}, 50]
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$unwind" : "$reviews"
+                                   },
+                                   {
+                                       "$group" : {
+                                           "_id" : "$business_id",
+                                           "name" : {
+                                               "$first" : "$name"
+                                           },
+                                           "city" : {
+                                               "$first" : "$city"
+                                           },
+                                           "measured_avg_rating" : {
+                                               "$avg" : "$reviews.stars"
+                                           },
+                                           "measured_var_rating" : {
+                                               "$stdDevPop" : "$reviews.stars"
+                                           },
+                                           "reviews" : {
+                                               "$addToSet" : "$reviews"
+                                           },
+                                           "num_reviews" : {
+                                               "$sum" : 1
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$unwind" : "$reviews"
+                                   },
+                                   {
+                                       "$match" : {
+                                           "$expr" : {
+                                               "$or" : [
+                                                   {
+                                                       "$and" : [{
+                                                           "$gte" : ["$reviews.stars", 4]
+                                                       }, 
+                                                       {
+                                                           "$eq" : ["$reviews.sentiment", "positive"]
+                                                       }]
+                                                   },
+                                                   {
+                                                       "$and" : [{
+                                                           "$lte" : ["$reviews.stars", 2]
+                                                       },
+                                                       {
+                                                           "$eq" : ["$reviews.sentiment", "negative"]
+                                                       }]
+                                                   }
+                                               ]
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$group" : {
+                                           "_id" : "$_id",
+                                           #**{field: {"$first" : f"${field}"} for field in ["name", "city", "measured_avg_rating", "measured_var_rating"]}, #Writing "field" : {"$first" : "$field"} is verbose and repetitive, in this way we can avoid it!
+                                           "name" : {
+                                               "$first" : "$name"
+                                           },
+                                           "city" : {
+                                               "$first" : "$city"
+                                           },
+                                           "measured_avg_rating" : {
+                                               "$first" : "$measured_avg_rating"
+                                           },
+                                           "measured_var_rating" : {
+                                               "$first" : "$measured_var_rating"
+                                           },
+                                           "num_reviews" : {
+                                               "$first" : "$num_reviews"
+                                           },
+                                           "filtered_avg_rating" : {
+                                               "$avg" : "$reviews.stars"
+                                           },
+                                           "filtered_var_rating" : {
+                                               "$stdDevPop" : "$reviews.stars"
+                                           },
+                                           "num_filtered_reviews" : {
+                                               "$sum" : 1
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$addFields" : {
+                                           "abs_avg_diff" : {
+                                               #"abs" operator is used to compute the absolute value of a number
+                                               "$abs" : {
+                                                   #"subtract" operator is used to compute the difference between two numbers
+                                                   "$subtract" : ["$filtered_avg_rating", "$measured_avg_rating"]
+                                               }
+                                           },
+                                           "abs_var_diff" : {
+                                               "$abs" : {
+                                                   "$subtract" : ["$filtered_var_rating", "$measured_var_rating"]
+                                               }
+                                           },
+                                           "biased_ratio" : {
+                                               "$divide" : [{"$subtract" : ["$num_reviews", "$num_filtered_reviews"]}, "$num_reviews"]
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$sort" : {
+                                           "biased_ratio" : -1,
+                                           "abs_var_diff" : -1,
+                                           "abs_avg_diff" : -1
+                                       }
+                                   },
+                                   {
+                                       "$project" : {
+                                           "business_id" : "$_id",
+                                           "_id" : 0,
+                                           "name" : 1,
+                                           "city" : 1,
+                                           "measured_avg_rating" : 1,
+                                           "filtered_avg_rating" : 1,
+                                           "measured_var_rating" : 1,
+                                           "filtered_var_rating" : 1,
+                                           "biased_ratio" : 1
+                                       }
+                                   }])

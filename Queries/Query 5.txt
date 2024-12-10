@@ -1,0 +1,141 @@
+#*****************************************************************************************************************************
+#**** I keep the names of the output variables because actually to obtain the final result I needed two different queries ****
+#*****************************************************************************************************************************
+
+night_reviews = db["reviews"].aggregate([{
+                                             "$addFields" : {
+                                                 "review_hour" : {
+                                                     #"$hour" opeartor let us extract the hour from a date
+                                                     "$hour": "$date"
+                                                 }
+                                             }
+                                         },
+                                         {
+                                             #In this stage, we'are considering only the reviews written during the night
+                                             "$match" : {
+                                                 "$or" : [
+                                                     {"review_hour" : {"$gte" : 22}},
+                                                     {"review_hour" : {"$lte" : 5}}
+                                                 ]
+                                             }
+                                         },
+                                         {
+                                             "$group" : {
+                                                 "_id" : "$user_id",
+                                                 "num_night_reviews" : {
+                                                     "$sum" : 1
+                                                 },
+                                                 "avg_night_ratings" : {
+                                                     "$avg" : "$stars"
+                                                 }
+                                             }
+                                         },
+                                         {
+                                             "$project" : {
+                                                 "_id" : 0,
+                                                 "user_id" : "$_id",
+                                                 "num_night_reviews" : 1,
+                                                 "avg_night_ratings" : 1
+                                             }
+                                         }])
+
+day_reviews = db["reviews"].aggregate([{
+                                           "$addFields" : {
+                                               "review_hour" : {
+                                                   "$hour": "$date"
+                                               }
+                                           }
+                                       },
+                                       {
+                                           "$match" : {
+                                                #In this stage, we'are considering only the reviews written during the night
+                                               "$and" : [
+                                                     {"review_hour" : {"$lt" : 22}},
+                                                     {"review_hour" : {"$gt" : 5}}
+                                                 ]
+                                           }
+                                       },
+                                       {
+                                           "$group" : {
+                                               "_id" : "$user_id",
+                                               "num_day_reviews" : {
+                                                   "$sum" : 1
+                                               },
+                                               "avg_day_ratings" : {
+                                                   "$avg" : "$stars"
+                                               }
+                                           }
+                                       },
+                                       {
+                                           "$project" : {
+                                               "_id" : 0,
+                                               "user_id" : "$_id",
+                                               "num_day_reviews" : 1,
+                                               "avg_day_ratings" : 1
+                                           }
+                                       }])
+
+#************************************************************ ANOTHER VERSION ***************************************************
+db["reviews"].aggregate([{
+                             "$addFields" : {
+                                 "reviewHour" : {
+                                     "$hour": "$date"
+                                 }
+                             }
+                         },
+                         {
+                             "$addFields" : { 
+                                 "is_night" : {
+                                     "$or" : [
+                                         {"$gte": ["$reviewHour", 22]}, 
+                                         {"$lt": ["$reviewHour", 5]}
+                                     ]
+                                 }
+                             }
+                         },
+                         { 
+                             "$group" : {
+                                 "_id" : "$user_id",
+                                 "num_night_reviews" : {
+                                     "$sum" : {
+                                         #"$cond" opeartor let us specify a if-then-else like condition. In thins case if "$is_night" == True, we sum 1, otherwise 0
+                                         "$cond" : ["$is_night", 1, 0] 
+                                     }
+                                 },
+                                 "num_day_reviews" : {
+                                     "$sum" : {
+                                         "$cond" : ["$is_night", 0, 1]
+                                     }
+                                 },
+                                 "avg_night_ratings" : {
+                                     "$avg" : {
+                                         "$cond" : ["$is_night", "$stars", None] 
+                                     } 
+                                 },
+                                 "avg_day_ratings" : {
+                                     "$avg" : {
+                                         "$cond" : ["$is_night", None, "$stars"]
+                                     }
+                                 }
+                             }
+                         },
+                         { 
+                             "$match": {
+                                 "num_night_reviews" : {
+                                     "$gte": 2
+                                 },
+                                 "num_day_reviews" : {
+                                     "$gte": 4
+                                 },
+                             }
+                         },
+                         { 
+                             "$project" : {
+                                 "_id": 0,
+                                 "user_id": "$_id",
+                                 "num_night_reviews": 1,
+                                 "num_day_reviews": 1,
+                                 "avg_night_ratings": 1,
+                                 "avg_day_ratings": 1
+                             }
+                         }])

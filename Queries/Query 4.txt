@@ -1,0 +1,101 @@
+#*****************************************************************************************************************************
+#**** I keep the names of the output variables because actually to obtain the final result I needed two different queries ****
+#*****************************************************************************************************************************
+
+competitors = db["businesses"].aggregate([{
+                                              "$unwind" : "$categories"
+                                          },
+                                          {
+                                              "$group" : {
+                                                  "_id" : {
+                                                      "city" :"$city",
+                                                      "category" : "$categories"
+                                                  },
+                                                  "businesses_names" : {
+                                                      "$addToSet" : "$name"
+                                                  }
+                                              }
+                                          },
+                                          {
+                                              #"$addFields" operator is used to create new temporary fields in the document; typically, they'll used later on.
+                                              "$addFields" : {
+                                                  "businesses_names_copy" : "$businesses_names"
+                                              }
+                                          },
+                                          {
+                                              "$unwind" : "$businesses_names"
+                                          },
+                                          {
+                                              "$group" : {
+                                                  "_id" : {
+                                                      "name" : "$businesses_names",
+                                                      "city" : "$_id.city"
+                                                  },
+                                                  "possible_competitors" : {
+                                                      "$addToSet" : "$businesses_names_copy"
+                                                  }
+                                              }
+                                          },
+                                          {
+                                              "$project" : { 
+                                                  "_id" : 1,
+                                                  "possible_competitors" : {
+                                                      #"possible_competitors" is a set. We need to pop from it the "_id.name" of the current document,
+                                                      #so we'll use a "$filter" stage
+                                                      "$filter" : {
+                                                          #"input" is the input set (array)
+                                                          "input" : "$possible_competitors",
+                                                          #"as" let us define an alias for the input set (array)
+                                                          "as" : "pc",
+                                                          #"cond" let use specify the filtering criteria: in this case "business_name" inside set ("$$pc") must be different from "_id.name" of the current documet
+                                                          "cond" : {
+                                                              "$ne" : ["$$pc", "$_id.name"]
+                                                          }
+                                                      }
+                                                  }
+                                              }
+                                          },
+                                          {
+                                              "$addFields" : {
+                                                  "num_competitors" : {
+                                                      #"$size" operator let us find the size of a set (array)
+                                                      "$size" : "$possible_competitors"
+                                                  }
+                                              }
+                                          },
+                                          {
+                                              "$project" : {
+                                                  "_id" : 0,
+                                                  "city" : "$_id.city",
+                                                  "name" : "$_id.name",
+                                                  "num_competitors" : 1
+                                              }
+                                          }])
+
+ratings = db["businesses_merged"].aggregate([{
+                                                 "$unwind" : "$reviews" 
+                                             },
+                                             {
+                                                 "$group" : {
+                                                     "_id" : {
+                                                         "name" : "$name", 
+                                                         "city" : "$city" 
+                                                     },
+                                                     "avg_stars" : {
+                                                         "$avg" : "$reviews.stars" 
+                                                     },
+                                                     "star_variance" : {
+                                                         "$stdDevPop" : "$reviews.stars"
+                                                     }
+
+                                                 }
+                                             },
+                                             {
+                                                 "$project" : {
+                                                     "_id" : 0,
+                                                     "name" : "$_id.name",
+                                                     "city" : "$_id.city",
+                                                     "avg_stars" : 1,
+                                                     "star_variance" : 1
+                                                 }
+                                             }])

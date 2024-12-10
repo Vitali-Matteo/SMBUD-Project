@@ -1,0 +1,84 @@
+#***************************************************************************************************************************************************
+#**** I keep the names of the output variables and some Pandas code because actually to obtain the final result I needed two different queries. ****
+#***************************************************************************************************************************************************
+
+min_max_confidence = db["reviews"].aggregate([{
+                                                  "$project" : {
+                                                      "_id" : 1,
+                                                      "confidence" : 1
+                                                  }
+                                              },
+                                              {
+                                                  "$group" : {
+                                                      "_id" : True,
+                                                      "max_confidence" : {
+                                                          "$max" : "$confidence"
+                                                      },
+                                                      "min_confidence" : {
+                                                          "$min" : "$confidence"
+                                                      }
+                                                  }
+                                              },
+                                              {
+                                                  "$project" : {
+                                                      "_id" : 0
+                                                  }
+                                              }])
+
+min_max_confidence = pd.DataFrame(min_max_confidence)
+min_confidence, max_confidence = min_max_confidence["min_confidence"][0], min_max_confidence["max_confidence"][0]
+interval = max_confidence - min_confidence
+bins = [min_confidence, min_confidence + interval / 4.0, min_confidence + interval / 2.0, min_confidence + 3.0 / 4.0 * interval, max_confidence]
+
+bins_fields = {
+    f"bin_{i + 1}": {
+        "$sum" : {
+            "$cond" : {
+                "if" : {
+                    "$and" : [
+                        {"$gte" : ["$confidence", bins[i]]},
+                        {"$lte" : ["$confidence", bins[i + 1]]}
+                    ]
+                },
+                "then" : 1,
+                "else" : 0
+            }
+        }
+    }
+    for i in range(4)
+}
+
+query_results = db["reviews"].aggregate([{
+                                              "$project" : {
+                                                  "sentiment" : 1,
+                                                  "confidence" : 1,
+                                                  "stars" : 1
+                                              }
+                                          },
+                                          {
+                                              "$group" : {
+                                                  "_id" : {
+                                                      "stars" : "$stars",
+                                                      "sentiment" : "$sentiment"
+                                                  },
+                                                  "num_reviews" : {
+                                                      "$sum" : 1
+                                                  },
+                                                  #Withint the query, we can use dict unpacking (** operator) to merge the binning in the "group" stage
+                                                  **bins_fields
+                                              }
+                                          },
+                                          {
+                                              "$project" : {
+                                                  "stars" : "$_id.stars",
+                                                  "sentiment" : "$_id.sentiment",
+                                                  "_id" : 0,
+                                                  "max_confidence" : 1,
+                                                  "min_confidence" : 1,
+                                                  "bin_1" : 1,
+                                                  "bin_2" : 1, 
+                                                  "bin_3" : 1,
+                                                  "bin_4" : 1,
+                                                  "num_reviews": 1
+                                              }
+                                          }])

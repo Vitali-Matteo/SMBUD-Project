@@ -1,0 +1,77 @@
+#*****************************************************************************************************************************
+#**** I keep the names of the output variables because actually to obtain the final result I needed two different queries ****
+#*****************************************************************************************************************************
+
+more_than_one_city = db["businesses"].aggregate([{
+                                                     "$group" : {
+                                                         "_id" : {
+                                                             "name" : "$name", 
+                                                         },
+                                                         "cities" : {
+                                                             "$addToSet" : "$city"
+                                                         }
+                                                     }
+                                                 },
+                                                 {
+                                                     "$match" : {
+                                                         "$expr" : {
+                                                             "$gt" : [{"$size" : "$cities"}, 1]
+                                                         }
+                                                     }
+                                                 },
+                                                 {
+                                                     "$project" : {
+                                                         "_id" : 0,
+                                                         "name" : "$_id.name",
+                                                         "num_cities" : {"$size" : "$cities"}
+                                                     }
+                                                 }])
+
+ratings = db["businesses_merged"].aggregate([{
+                                                 "$unwind" : "$reviews" 
+                                             },
+                                             {
+                                                 "$group" : {
+                                                     "_id" : {
+                                                         "name" : "$name", 
+                                                         "city" : "$city" 
+                                                     },
+                                                     "avg_stars" : {
+                                                         "$avg" : "$reviews.stars" 
+                                                     }
+                                                 }
+                                             },
+                                             {
+                                                 "$project" : {
+                                                     "_id" : 0,
+                                                     "name" : "$_id.name",
+                                                     "city" : "$_id.city",
+                                                     "avg_stars" : 1
+                                                 }
+                                             },
+                                             {
+                                                 "$sort" : {
+                                                     "name" : 1,
+                                                     "avg_stars" : -1
+                                                 }
+                                             },
+                                             {
+                                                 "$group" : {
+                                                     "_id" : "$name",
+                                                     "city" : { 
+                                                         "$first" : "$city"
+                                                     },
+                                                     "avg_stars" : {
+                                                         "$first" : "$avg_stars"
+                                                     }
+                                                 }
+                                             },
+                                             {
+                                                 "$project" : {
+                                                     "_id" : 0,
+                                                     "name" : "$_id",
+                                                     "city" : 1,
+                                                     "avg_stars" : 1
+                                                 }
+                                             }])
+  

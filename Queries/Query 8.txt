@@ -1,0 +1,86 @@
+db["businesses_merged"].aggregate([{
+                                       "$unwind": "$reviews"
+                                   },
+                                   {
+                                       "$unwind" : "$categories" #If scores.min() is low, think of adding a match here to filter out only reviews with certain score (by inspecting the data seems to not be necessary!)
+                                   },
+                                   {
+                                       "$group" : {
+                                           "_id" : {
+                                               "city" : "$city",
+                                               "name" : "$name",
+                                               "category": "$categories"
+                                           },
+                                           "num_positive_reviews" : {
+                                               "$sum" : {
+                                                   "$cond" : [{"$eq" : ["$reviews.sentiment", "positive"]}, 1, 0]
+                                               }
+                                           },
+                                           "num_negative_reviews" : {
+                                               "$sum" : {
+                                                   "$cond" : [{"$eq" : ["$reviews.sentiment", "negative"]}, 1, 0]
+                                               }
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$match" : {
+                                           "num_positive_reviews" : {
+                                               "$gte": 50
+                                           },
+                                           "num_negative_reviews" : {
+                                               "$gte" : 50
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$addFields" : {
+                                           "neg_to_pos_ratio" : {
+                                               #"divide" operator let use divide two numbers
+                                               "$divide" : ["$num_negative_reviews", "$num_positive_reviews"]
+                                           }
+                                       }
+                                   },
+                                   {
+                                       #In the following "$group" stage, we keep only the "$first" name for each (city, category) because
+                                       #here we are sorting in descending order all documents w.r.t- "neg_to_pos_ratio"
+                                       #Sorting on "city" and "name" is not strictly necessary for the following stages, but it might be beneficial if you break the pipeline here
+                                       "$sort" : {
+                                           "city" : 1,
+                                           "name" : 1,
+                                           "neg_to_pos_ratio" : -1
+                                       }
+                                   },
+                                   {
+                                       "$group" : {
+                                           "_id" : {
+                                               "city" : "$_id.city",
+                                               "category" : "$_id.category"
+                                           },
+                                           "name" : {
+                                               "$first" : "$_id.name", 
+                                           },
+                                           "num_positive_reviews" : {
+                                               "$first" : "$num_positive_reviews"
+                                           },
+                                           "num_negative_reviews" : {
+                                               "$first" : "$num_negative_reviews"
+                                           },
+                                           "neg_to_pos_ratio" : {
+                                               "$first" : "$neg_to_pos_ratio"
+                                           }
+                                       }
+                                   },
+                                   {
+                                       "$project" : {
+                                           "_id" : 0,
+                                           "city" : "$_id.city",
+                                           "category" : "$_id.category",
+                                           "tot_reviews" : {
+                                               "$sum" : ["$num_positive_reviews", "$num_negative_reviews"]
+                                           },
+                                           "num_negative_reviews" : 1,
+                                           "num_positive_reviews" : 1,
+                                           "neg_to_pos_ratio" : 0
+                                       }
+                                   }])
