@@ -133,7 +133,7 @@
     alsoletter={$},  % Treat $ as part of keywords
     morekeywords=[1]{  % Operators list
         $project, $unwind, $group, $sum, $addToSet, 
-        $size, $sort, $filter, $map, $push, $match, $lookup, from, as, $expr, $eq, $nin, $not, pipeline, let, $avg, $first, $max, $min, $ne, $addFields, $cond, cond, $stdDevPop, None, $or, $and, $not, $gte, $gt, $lte, $lt, $eq, $hour, $year, input, in, $setIntersection, localField, foreignField, $divide, $bucket, groupBy, boundaries, default, output, $densify, field, range, step, bounds, $set
+        $size, $sort, $filter, $map, $push, $match, $lookup, from, as, $expr, $eq, $nin, $not, pipeline, let, $avg, $first, $max, $min, $ne, $addFields, $cond, cond, $stdDevPop, None, $or, $and, $not, $gte, $gt, $lte, $lt, $eq, $hour, $year, input, in, $setIntersection, localField, foreignField, $divide, $bucket, groupBy, boundaries, default, output, $densify, field, range, step, bounds, $set, $subtract, $abs
     }
 }
 
@@ -239,42 +239,30 @@
 
 \chapter{Introduction}
 \label{ch:chapter_one}
-\begin{lstlisting}[style=mongodb]
-db.collection.aggregate([
-    {
-        $match: {
-            status: "active",
-            age: { $gt: 25 }
-        }
-    },
-    {
-        $group: {
-            _id: "$category",
-            total: { $sum: "$amount" }
-        }
-    }
-])
-\end{lstlisting}
+
 In this chapter, the reader is presented with a high-level description of the project work delivered for the \textit{Systems and
 Methods for Big and Unstructured Data course} at Politecnico di Milano.
 
 \section{Objective}
 \label{sec:Objective}
-The objective of this project is to design and perform 10 queries on a publicly available dataset, by employing a No-SQL technology (Neo4j, MongoDB and Elasticsearch). In this way, we acan extract valuable insights from the collected data and, at the same time, we are putting into practice the knowledge acquired during the course on one of these Database Management Systems (DBMSs).
+The objective of this project is to design and perform 10 queries on a publicly available dataset employing a No-SQL technology (Neo4j, MongoDB and Elasticsearch). In this way, valuable insights could be extracted from the collected data and, at the same time, knowledge acquired during the course on one of these Database Management Systems (DBMSs) could be applied in practice.
 
 \section{Dataset overview}
-The folowing analysis is based on Yelp dataset that can been found on \href{https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset}{Kaggle} or on the official \href{https://www.yelp.com/dataset}{Yelp's page}. 
+The following analysis is based on Yelp dataset that can been found on \href{https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset}{Kaggle} or on the official \href{https://www.yelp.com/dataset}{Yelp's page}. 
 
 It's a comprehensive collection of information about businesses, reviews, users, and other related data, designed for academic research and learning purposes, organized as follows:
 \begin{itemize}
-    \item{Reviews}: 6,990,280 in total, complete with full text, star ratings, and metadata such as helpfulness votes and dates.
-    \item{Businesses}: 150,346 in total, each described with attributes like location, hours, categories, and reviews.
-    \item{Users}: 1,987,897 in total, with review activity, social connections, and received compliments.
-    \item{Check-ins}: over 200,100 check-ins for 131,930 different businesses.
+    \item{Reviews}: $6,990,280$ in total, complete with full text, star ratings, and metadata such as helpfulness votes and dates.
+    \item{Businesses}: $150,346$ in total, each described with attributes like location, hours, categories, and reviews.
+    \item{Users}: $1,987,897$ in total, with review activity, social connections, and received compliments.
+    \item{Check-ins}: over $200,100$ check-ins for $131,930$ different businesses.
 \end{itemize}
-The original dataset contains, also, tips (brief reviews written by users) and pictures, bu they haven't  been included in the analysis for the sake of simplicity. 
 
-Data span 11 metropolitan areas, including cities like Montreal, Toronto, Phoenix, Las Vegas, and Pittsburgh.
+The original dataset contained, also, tips (brief reviews written by users) and pictures, but they haven't  been included in the analysis for the sake of simplicity. 
+
+Data span multiple metropolitan areas, including cities like Montreal, Toronto, Phoenix, Las Vegas, and Pittsburgh.
+
+\bigskip
 
 Here, the reader can find an example of each document:
 \begin{itemize}
@@ -388,17 +376,19 @@ Here, the reader can find an example of each document:
 \end{itemize}
 
 \section{Methodology}
-In this project, an organizational approach was adopted to analyse the dataset: the ultimate goal, namely, was extracting actionable insights to support decision-making within the business and have a deeper understanding of customer behaviour. Also, through sentiment analysis of customers feedbacks, patterns in user satisfaction were uncovered and potential anomalies identified (e.g. clusters of negative / positive reviews associated with specific businesses / categories / cities).
+In this project, an organizational approach is adopted to analyse the dataset: the ultimate goal, namely, consists of extracting actionable insights to support decision-making within the business and have a deeper understanding of customer behaviour. Also, through sentiment analysis of customers feedbacks, patterns in user satisfaction are uncovered and potential anomalies identified (e.g. clusters of negative / positive reviews associated with specific businesses / categories / cities).
 
-The project began with a comprehensive examination of the dataset’s structure and features. This initial phase was essential for uncovering significant elements worthy of further investigation. After this, first batch of queries ($1$ to $7$ and $9$) were formalized in natural language and then drafted in code. As last step, sentiment analysis was performed on reviews, DB updated and queries $8 - 10$ (leveraging previous results) written.  
+\bigskip
+
+The project began with a comprehensive examination of the dataset’s structure and features. This initial phase was essential for uncovering significant elements worthy of further investigation. After this, first batch of queries ($1$ to $7$ and $9$) were formalized and drafted in code. As last step, sentiment analysis was performed on reviews, DB updated and queries $8 - 10$ (leveraging previous results) written.  
 
 \section{DBMS Technology}
 For this project, MongoDB has been used.
 
 \subsection{MongoDB overview}
-MongoDB is a document-oriented, open source database system that organizes data using a JSON-like document structure. It offers exceptional speed, scalability, and performance when handling large datasets by leveraging its distributed architecture. Its compatibility with JSON / CSV makes it an excellent choice for managing web data or scientific dataset.
+MongoDB is a document-oriented, open source database system that organizes data using a JSON-like document structure. It offers speed, scalability, and performance when handling large datasets by leveraging its distributed architecture. Its compatibility with JSON / CSV makes it an excellent choice for managing web data or scientific dataset.
 
-A standout feature of MongoDB is its flexible document structure, which easily adapts to changing data requirements. It also supports powerful aggregation pipelines and geospatial data processing, enabling sophisticated data analysis and transformations. As a document-based database, MongoDB excels in data retrieval by eliminating the need for resource-intensive join operations commonly used in relational databases.
+MongoDB supports flexible document structure that is necessary when dealing with changing data requirements. It also supports powerful aggregation pipelines and geospatial data processing for sophisticated data analysis and transformations. As a document-based database, MongoDB is very powerful in data retrieval without the need for resource-intensive join operations commonly used in relational databases.
 
 \subsection{Technology selection criteria}
 As the reader will see, we heavily relied on MongoDB's flexible schema design for our data analysis. Namely, diverse data structures can be stored in each document, without enforcing rigid constraints: think, for example, to business attributes, user profiles that are have naturally different formats and values. Moreover, when adding new features or queries' objectives change, we can immediately start storing and analysing new fields without schema migrations.
@@ -541,6 +531,7 @@ Individual collections have the following shape:
 \texttt{attributes} & \texttt{object} & Key-value pairs of business attributes (e.g., parking availability). \\ \hline
 \texttt{categories} & \texttt{array} & Array of strings representing business categories. \\ \hline
 \texttt{hours} & \texttt{object} & Key-value pairs of operating hours by day. \\ \hline
+\caption{\texttt{businesses} collection}
 \end{longtable}
 
 \item{\texttt{reviews}}
@@ -556,6 +547,7 @@ Individual collections have the following shape:
 \texttt{useful} & \texttt{integer} & Number of useful votes received by the review. \\ \hline
 \texttt{funny} & \texttt{integer} & Number of funny votes received by the review. \\ \hline
 \texttt{cool} & \texttt{integer} & Number of cool votes received by the review. \\ \hline
+\caption{\texttt{reviews} collection}
 \end{longtable}
 
 \item{\texttt{users}}
@@ -574,6 +566,7 @@ Individual collections have the following shape:
 \texttt{elite} & \texttt{array} & Years the user was marked as elite. \\ \hline
 \texttt{average\_stars} & \texttt{float} & User's average star rating across all reviews. \\ \hline
 \texttt{compliments} & \texttt{object} & Count of compliments received by category (e.g., \texttt{hot}, \texttt{funny}). \\ \hline
+\caption{\texttt{users} collection}
 \end{longtable}
 
 \item{\texttt{checkins}}
@@ -582,6 +575,7 @@ Individual collections have the following shape:
 \textbf{Field Name} & \textbf{Type} & \textbf{Description} \\ \hline
 \texttt{business\_id} & \texttt{string} & Unique identifier for the business (22 characters). \\ \hline
 \texttt{date} & \texttt{string} & Comma-separated list of timestamps (format: YYYY-MM-DD HH:MM:SS). \\ \hline
+\caption{\texttt{checkins} collection}
 \end{longtable}
 
 \end{itemize}
@@ -689,6 +683,39 @@ reviews
 Note that we don't keep \texttt{\_id} column, but only \texttt{review\_id} column because as mentioned in previous chapter, we created an index on it.  
 
 \subsection{Model usage}
+The main class if \texttt{SentimentAnalyzer}.
+
+First, text was preprocessed: each review text was mapped into numerical tokens that the model is able to understand. Naturally, text varies in length, so padding and truncation were used to ensure consistent input lengths:
+
+\begin{verbatim}
+tokenizer(texts, 
+         max_length = self.max_length, 
+         padding = True, 
+         truncation = True, 
+         return_tensors = "pt")
+\end{verbatim}
+
+To optimize memory usage, the model operated in half-precision mode when using GPU:
+\begin{verbatim}
+if self.device == "cuda":
+    self.model = self.model.half()
+\end{verbatim}
+
+Dataset consisted in about $7$ million reviews and all of them needed to be processed to have a good result, so batching and chunking strategies were applied:
+\begin{itemize}
+    \item Chunks: large portions of the dataset (e.g. $10,000$ reviews) that get loaded into memory and stored in CSV file at once;
+    \item (Mini-) Batches: smaller groups (e.g. $512$ reviews) within each chunk that are processed together by the GPU.
+\end{itemize}
+
+This was implemented as nested loops:
+\begin{verbatim}
+for start_idx in range(0, total_rows, chunk_size):
+    chunk_df = df.iloc[start_idx : end_idx]
+    
+    for batch_start in range(0, len(chunk_df), self.batch_size):
+        batch_df = chunk_df.iloc[batch_start : batch_end]
+\end{verbatim}
+
 Once defined the \texttt{analyzer}, we used it:
 
 \bigskip
@@ -696,13 +723,15 @@ Once defined the \texttt{analyzer}, we used it:
 \begin{minted}{python}
 analyzer = SentimentAnalyzer("""distilbert-base-uncased-finetuned
                              -sst-2-english""", 
-                             batch_size = 1024, max_length = 128)
+                             batch_size = 512, max_length = 256)
 
 analyzer.process_reviews(reviews, 
-                         "sentiment_results_v2.csv", 10000)
+                         "sentiment_results.csv", 10000)
 \end{minted}
 
 \bigskip
+
+where \texttt{max\_length} is the maximum number of tokens in which text will be split up by the tokenizer. The model was trained and fine-tuned with sequences of maximum length of $512$, so all values below should be fine. 
 
 The resulting CSV file contained on each line a triplet: \texttt{(review\_id, sentiment, \\score)}
 
@@ -1227,6 +1256,25 @@ db["businesses"].aggregate([{
 \bigskip
 
 All possible competitors were found by collecting businesses' names for each \texttt{(city, category)} in \texttt{businesses\_names}, duplicating this field, unwinding it, recollecting the businesses' names for each \texttt{(name, city)} into \texttt{possible\_competitors} and, finally, filtering it to exclude businesses with \texttt{name} equal to \texttt{\_id.name}. 
+
+\begin{enumerate}
+\item In the \texttt{\$unwind} stage documents with multiple categories were split, creating separate documents for each category.
+
+\item Documents were grouped by \texttt{(city, category)} pairs using \texttt{\$group} and, for each group, the unique business names were collected into \texttt{businesses\_names}.
+
+\item A copy of \texttt{businesses\_names} was created as \texttt{businesses\_names\_copy} for later reference.
+
+\item The \texttt{businesses\_names} array was unwound: in each document a certain \texttt{(busi-\\ness\_name, category)} is associated with all the competitors \texttt{business\_name} for that category.
+
+\item Then, documents were regrouped by \texttt{(name, city)}, collecting all businesses that share any category  from \texttt{businesses\_names\_copy} arrays (i.e. potential competitors).
+
+\item With \texttt{\$project} and \texttt{\$filter}, each business was removed from its own list of competitors.
+
+\item Number of competitors for each business was computed using \texttt{\$size}.
+
+\item Lastly, the output was formatted to show \texttt{city}, \texttt{name}, and \texttt{num\_competitors} for each business.
+
+\end{enumerate}
 
 \item \texttt{ratings}: for each business, average and standard deviation of reviews' stars were computed. 
 
@@ -1781,7 +1829,7 @@ In addition, cities with higher total reviews often have larger disparities betw
 \section{Query 9: number of businesses for each bucket of possible reviews ratings}
 The aim of this query was to count the number of businesses for each bucket (or bin) of possible review ratings. In particular, we defined:
 $$\texttt{buckets} = [0, 0.5, ..., 4.5, 5]$$
-and counted how many businesses had their average review rating in $[\texttt{buckects[i]}, \texttt{buckets[i + 1]})$, using \texttt{\$bucket} operator.
+and counted how many businesses had their average review rating in $[\texttt{buckects[i]}, \\ \texttt{buckets[i + 1]})$, using \texttt{\$bucket} operator.
 
 \bigskip
 
@@ -1907,7 +1955,7 @@ Two steps were performed for this query:
 
 \bigskip
 
-\item Vector of bins was defined using Python (here not shown for the sake of shortness).
+\item From \texttt{min\_max\_confidence}, vector of bins was defined using Python (here not shown for the sake of shortness).
 
 \item \texttt{query\_results}: bucket count of \texttt{confidence} was performed.
 
@@ -1952,7 +2000,207 @@ db["reviews"].aggregate([{
 
 \bigskip
 
+In particular, to avoid repeating very similar lines of code different times, we opted for dict unpacking (\texttt{**bin\_fields}) inside the \texttt{\$group} stage (the reader can look at specific code in the \texttt{Query 9} section of the \texttt{Query} notebook).
+
 \end{itemize}
+
+Results were collected in the following DataFrame:
+
+\bigskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=3\columnwidth / 4]{imgs/query_10b.png}
+    \caption{DataFrame of distribution of confidence score for each review star}
+    \label{fig:query_10b}
+\end{figure}
+
+\bigskip
+
+From it, two histograms were derived: 
+
+\bigskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{imgs/query_10.png}
+    \caption{Histogram of distribution of confidence score for each review star}
+    \label{fig:query_10}
+\end{figure}
+
+\bigskip
+
+The analysis reveals a clear relationship between sentiment and review stars. Reviews with $4$ or $5$ stars are predominantly classified as positive, while those with $1$ or $2$ stars are mostly negative, as one could intuitively think. Three-star reviews are equally classified as positive or negative: this means that we can use $3$ as threshold to discriminate outlayer reviews (see \ref{query_11}).
+
+\section{Query 11: search for reviews outlayers}
+\label{query_11}
+The objective of this query was to search for reviews outlayers, i.e. reviews with positive (negative) sentiment, but low (high) number of stars under the assumption that positive (negative) sentiments are typically associated with $\text{stars} \geq 3.0$ ($\text{stars} \leq 2.0$). Moreover, the impact of this outlayers on the average reviews score was estimated. 
+
+To guarantee low bias in the analysis, only businesses with at least 50 reviews were considered.
+
+\bigskip
+
+\begin{lstlisting}[style = mongodb]
+db["businesses_merged"].aggregate([{
+        "$match" : {
+            "$expr" : {
+                "$gte" : [{"$size" : "$reviews"}, 50]
+            }
+        }
+    },
+    {
+        "$unwind" : "$reviews"
+    },
+    {
+        "$group" : {
+            "_id" : "$business_id",
+            "name" : {
+                "$first" : "$name"
+            },
+            "city" : {
+                "$first" : "$city"
+            },
+            "measured_avg_rating" : {
+                "$avg" : "$reviews.stars"
+            },
+            "measured_var_rating" : {
+                "$stdDevPop" : "$reviews.stars"
+            },
+            "reviews" : {
+                "$addToSet" : "$reviews"
+            },
+            "num_reviews" : {
+                "$sum" : 1
+            }
+        }
+    },
+    {
+        "$unwind" : "$reviews"
+    },
+    {
+        "$match" : {
+            "$expr" : {
+                "$or" : [
+                    {
+                        "$and" : [{
+                            "$gte" : ["$reviews.stars", 4]
+                        }, 
+                        {
+                            "$eq" : ["$reviews.sentiment", "positive"]
+                        }]
+                    },
+                    {
+                        "$and" : [{
+                            "$lte" : ["$reviews.stars", 2]
+                        },
+                        {
+                            "$eq" : ["$reviews.sentiment", "negative"]
+                        }]
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "$group" : {
+            "_id" : "$_id",
+            "name" : {
+                "$first" : "$name"
+            },
+            "city" : {
+                "$first" : "$city"
+            },
+            "measured_avg_rating" : {
+                "$first" : "$measured_avg_rating"
+            },
+            "measured_var_rating" : {
+                "$first" : "$measured_var_rating"
+            },
+            "num_reviews" : {
+                "$first" : "$num_reviews"
+            },
+            "filtered_avg_rating" : {
+                "$avg" : "$reviews.stars"
+            },
+            "filtered_var_rating" : {
+                "$stdDevPop" : "$reviews.stars"
+            },
+            "num_filtered_reviews" : {
+                "$sum" : 1
+            }
+        }
+    },
+    {
+        "$addFields" : {
+            "abs_avg_diff" : {
+                "$abs" : {
+                    "$subtract" : ["$filtered_avg_rating", "$measured_avg_rating"]
+                }
+            },
+            "abs_var_diff" : {
+                "$abs" : {
+                    "$subtract" : ["$filtered_var_rating", "$measured_var_rating"]
+                }
+            },
+            "biased_ratio" : {
+                "$divide" : [{"$subtract" : ["$num_reviews", "$num_filtered_reviews"]}, "$num_reviews"]
+            }
+        }
+    },
+    {
+        "$sort" : {
+            "biased_ratio" : -1,
+            "abs_var_diff" : -1,
+            "abs_avg_diff" : -1
+        }
+    },
+    {
+        "$project" : {
+            "business_id" : "$_id",
+            "_id" : 0,
+            "name" : 1,
+            "city" : 1,
+            "measured_avg_rating" : 1,
+            "filtered_avg_rating" : 1,
+            "measured_var_rating" : 1,
+            "filtered_var_rating" : 1,
+            "biased_ratio" : 1
+        }
+    }
+])    
+\end{lstlisting}
+
+\bigskip
+
+Results were collected in the following DataFrame:
+
+\bigskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{imgs/query_11b.png}
+    \caption{DataFrame of measured vs filtered average /variance rating stars}
+    \label{fig:query_11b}
+\end{figure}
+
+\bigskip
+
+From it, two bar plots representing the differences between measured and filtered average / variance of reviews stars were derived: 
+
+\bigskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{imgs/query_11.png}
+    \caption{Histograms of measured vs filtered average / variance rating stars}
+    \label{fig:query_11}
+\end{figure}
+
+\bigskip
+
+For many businesses, the filtering process slightly increased the average rating: this mean that outliers often skew ratings downward. Some other cases display minimal impact. Variance decreased significantly in most cases after excluding outliers because this review contribute to greater inconsistency in perceived business quality. 
+
+The conclusion is that identifying and accounting for sentiment-star discrepancies can improve the reliability of aggregated ratings and better reflect actual customer experiences.
 
 %-------------------------------------------------------------------------
 %	APPENDICES
@@ -1966,6 +2214,9 @@ db["reviews"].aggregate([{
 %An appendix contains supplementary material (figures, tables, data, codes, mathematical proofs, surveys, \dots)
 %which supplement the main results contained in the previous chapters.
 
+\bigskip 
+
+\cleardoublepage
 
 % LIST OF FIGURES
 \listoffigures
