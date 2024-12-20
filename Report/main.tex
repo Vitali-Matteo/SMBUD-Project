@@ -194,11 +194,7 @@
 
 \puttitle{
 	title=Systems and Methods for Big and Unstructured Data Project,
-	name1=Matteo Vitali, % Author Name and Surname
-	name2=Name Surname 2, 
-	name3=Name Surname 3, 
-	name4=Name Surname 4,
-	name5=Name Surname 5,
+	name1=Matteo Vitali (10800443), % Author Name and Surname
 	academicyear=2024-2025,
 	groupnumber=114
 } % These info will be put into your Title page 
@@ -376,71 +372,77 @@ Here, the reader can find an example of each document:
 \end{itemize}
 
 \section{Methodology}
-In this project, an organizational approach is adopted to analyse the dataset: the ultimate goal, namely, consists of extracting actionable insights to support decision-making within the business and have a deeper understanding of customer behaviour. Also, through sentiment analysis of customers feedbacks, patterns in user satisfaction are uncovered and potential anomalies identified (e.g. clusters of negative / positive reviews associated with specific businesses / categories / cities).
+In this project, an organizational approach is adopted to analyse the dataset: the ultimate goal, namely, consists of extracting actionable insights to support decision-making within the business and having a deeper understanding of customer behaviour. 
 
 \bigskip
 
-The project began with a comprehensive examination of the dataset’s structure and features. This initial phase was essential for uncovering significant elements worthy of further investigation. After this, first batch of queries ($1$ to $7$ and $9$) were formalized and drafted in code. As last step, sentiment analysis was performed on reviews, DB updated and queries $8 - 10$ (leveraging previous results) written.  
+The project began with a comprehensive examination of the dataset’s structure and features. This initial phase was essential for uncovering significant elements worthy of further investigation. After this, first batch of queries ($1$ to $7$ and $9$) were formalized and drafted in code. As last step, sentiment analysis was performed on reviews, DB updated and remaining queries (leveraging previous results) written.  
 
 \section{DBMS Technology}
-For this project, MongoDB has been used.
+For this project, MongoDB was used.
 
 \subsection{MongoDB overview}
 MongoDB is a document-oriented, open source database system that organizes data using a JSON-like document structure. It offers speed, scalability, and performance when handling large datasets by leveraging its distributed architecture. Its compatibility with JSON / CSV makes it an excellent choice for managing web data or scientific dataset.
 
-MongoDB supports flexible document structure that is necessary when dealing with changing data requirements. It also supports powerful aggregation pipelines and geospatial data processing for sophisticated data analysis and transformations. As a document-based database, MongoDB is very powerful in data retrieval without the need for resource-intensive join operations commonly used in relational databases.
+MongoDB supports flexible document structure that is necessary when dealing with changing data requirements. It also offers powerful aggregation pipelines and geospatial data processing. As a document-based database, MongoDB is performs data retrieval without the need for resource-intensive join operations commonly used in relational databases.
 
 \subsection{Technology selection criteria}
-As the reader will see, we heavily relied on MongoDB's flexible schema design for our data analysis. Namely, diverse data structures can be stored in each document, without enforcing rigid constraints: think, for example, to business attributes, user profiles that are have naturally different formats and values. Moreover, when adding new features or queries' objectives change, we can immediately start storing and analysing new fields without schema migrations.
+As the reader will see, I heavily relied on MongoDB's flexible schema design for data analysis. Namely, diverse data structures can be stored in each document, without enforcing rigid constraints: think, for example, to business attributes, user profiles that are have naturally different formats and values. Moreover, when new features are added or queries' objectives change, we can immediately start storing and analysing new fields without schema migrations.
 
-Here, we present the inferred ER model:
+Instead of splitting related data across multiple collections, MongoDB can store a business entity along with its reviews, check-ins, and other related data in a single document, reducing the need for \texttt{\$lookup}s and making the queries more straightforward to write. 
 
-To query such model, we need to write lots of \texttt{join}s between table with hundred of thousands or millions of elements each. Instead of splitting related data across multiple tables, MongoDB can store a business entity along with its reviews, checkins, and other related data in a single document, reducing the need for \texttt{join}s and making the queries more straightforward to write. 
-
-Under the hood, MongoDB's WiredTiger storage engine caches frequently accessed data in memory while putting less frequently accessed data on disk. Especially for such large datasets, like the one in analysis, this is a key point for guaranteeing faster query execution and better resource utilization.
+Under the hood, MongoDB's WiredTiger storage engine caches frequently accessed data in memory while the rest on disk. Especially for large datasets, like the one in analysis, this is a key point for guaranteeing faster query execution and better resource utilization.
 
 
-Neo4j has been considered as alternative to MongoDB. Namely, the most important relations that emerge from inferred ER model are: $\texttt{(:User) -> [:REVIEWS] -> (:Business)}$,  $\texttt{(:User) -> [:ENTERS] -> (:Business)}$,  $\texttt{(:User) -> [:HAS\_FRIEND] -> (:User)}$. \\ For performed queries, Neo4j wouldn't be the optimal tool for several reasons. First, Neo4j's strength lies in handling complex relationships and path queries, which aren't the primary focus of business and review analysis. Then, Neo4j doesn't provide the same level of flexibility in document structure that MongoDB offers, making it more difficult to handle varying business attributes and review formats. Moreover, Neo4j is not optimized for running aggregation
-queries over the entire graph, so performing historical analysis over such a model did not appear suitable for the intended analysis.
+Neo4j has been considered as alternative to MongoDB. Namely, the most important relations that emerge from inferred ER model are: $\texttt{(:User) -> [:REVIEWS] -> (:Business)}$,  $\texttt{(:User) -> [:ENTERS] -> (:Business)}$,  $\texttt{(:User) -> [:HAS\_FRIEND] -> (:User)}$. \\ For queries to be performed, Neo4j wouldn't be the optimal tool for several reasons. First, Neo4j's strength lies in handling complex relationships and path queries, which aren't the primary focus of business and review analysis. Then, Neo4j doesn't provide the same level of flexibility in document structure that MongoDB offers, making it more difficult to handle varying business attributes and review formats. Moreover, Neo4j is not optimized for running aggregation queries over the entire graph, so performing historical analysis over such a model isn't suitable.
 
 
-Elasticsearch is excellent for full-text search and real-time log analysis, but it presents several limitations when it comes to analyse businesses and reviews data. First, its primary storage architecture is optimized for search operations rather than complex analytical queries: it excels at finding and retrieving documents based on text content, but it's way more inefficient in aggregations or joins that are common in our analysis. Vice versa, MongoDB's aggregation pipeline provides a more natural and efficient approach. 
+Elasticsearch is excellent for full-text search and real-time log analysis, but it presents several limitations when it comes to analyse businesses and reviews data. First, its primary storage architecture is optimized for search operations rather than analytical queries: it excels at finding and retrieving documents based on text content, but it's way more inefficient in aggregations or joins that are common in my analysis. Vice versa, MongoDB's aggregation pipeline provides a more natural and efficient approach. 
 The requirement to define mappings for all fields in Elasticsearch is fundamental for search optimization, but adds an extra layer of complexity that isn't necessary for pure data analysis tasks.
-Finally, while Elasticsearch can handle structured queries, its query DSL is primarily optimized for search patterns rather than analytical operations. This means that complex analytical queries often require more verbose and less intuitive query structures compared to MongoDB's more straightforward query language.
+Finally, it's true that Elasticsearch can handle structured queries, but they often require more verbose and less intuitive structures compared to MongoDB.
 
 \cleardoublepage
 \chapter{Data wrangling}
 \label{sec:Data wrangling}
-Withe \textit{"data wrangling"} we refer to the process of cleaning and reshaping raw input data, to enhance its quality and usability for analytical purposes. 
+With \textit{"data wrangling"} we refer to the process of cleaning and reshaping raw input data, to enhance its quality and usability for analytical purposes. 
 
 \section{Data collection}
-As mentioned before, data was downloaded from Yelp's dataset official page. It was organized in four different JSON files: \texttt{buinsesses.json}, \texttt{users.json}, \texttt{reviews.json} and \texttt{checkins.json}. All four of them were converted in Pandas DataFrames using \verb|pd.read_json()| method with \verb|lines = True| to guarantee line by line reading and \\\verb|convert_dates = [...]| on dates attributes. 
+As mentioned before, data was downloaded from Yelp's dataset official page. It was organized in four different JSON files: \texttt{buinsesses.json}, \texttt{users.json}, \texttt{reviews.json} and \texttt{checkins.json}. All of them were converted in Pandas DataFrames using \verb|pd.read_json()| method with \verb|lines = True| to guarantee line by line reading and \\\verb|convert_dates = [...]| for dates attributes. 
 
 \section{Data inspection}
 After having loaded the data, it was inspected to understand better the type of each attribute, the number of records and the size of each collection. 
 
 \section{Data cleaning}
 The primary objective of data cleaning phase was to search for \texttt{null} values and deal with them. Luckily, before publishing the dataset, Yelp team analysed it and started to clean it. There were no \texttt{null} values in \texttt{reviews}, \texttt{users} and \texttt{checkins} DataFrames. Vice versa, \texttt{attributes}, \texttt{categories} and \texttt{hours} contained some \texttt{null} values distributed as follows:
+
+\bigskip
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\columnwidth / 3]{imgs/null_count_businesses.png}
     \caption{Distribution of \texttt{null} values in \texttt{businesses}}
     \label{fig:null_count_businesses}
 \end{figure}
-This is not surprising at all because some businesses might not have specified opening hours or attributes. For $103$ businesses no category is specified. It seems like that having one of \texttt{null} is uncorrelated with the others being \texttt{null}, so we'll let MongoDB handle the missing fields.
+
+\bigskip
+
+This is not surprising at all because some businesses might not have specified opening hours or attributes. For $103$ businesses no category is specified. It seems like that having one of them \texttt{null} is uncorrelated with the others being \texttt{null}, so I'll let MongoDB handle the missing fields.
 
 \section{Data normalization}
-In this part of the preprocessing, we dived deeper into the DataFrames to prepare them for the following shaping phase. 
+In this part of the preprocessing, I dived deeper into the DataFrames to prepare them for the following shaping phase. 
 
 First, uninteresting columns were dropped and complex JSON structures (like the one for \texttt{attributes}) flattened using \texttt{flatten()} method of \texttt{flatten\_json} library. In \texttt{elite} column there were \texttt{null} values and not coherent or repeated years (like $20$ for $2020$). 
 
-It emerged that $44.19\%$ of total users didn't have any friends: this seemed uncorrelated with average star ratings or number of compliments received, so no rows were dropped. Also, upon having verified that $\texttt{users["friends"]} \not \subset \texttt{users["userd\_id"]}$, we have filtered out them with the method \texttt{filter\_list()}.
+It emerged that $44.19\%$ of total users didn't have any friends: this seemed uncorrelated with average star ratings or number of compliments received, so no rows were dropped. Also, upon having verified that $\texttt{users["friends"]} \not \subset \texttt{users["userd\_id"]}$, I have filtered out them with the method \texttt{filter\_list()}.
 
-The same problem arose in \texttt{businesses} and \texttt{reviews} collection: there were users who have written some reviews but their \texttt{user\_id} was not in \texttt{users["user\_id"]}: we dropped them form \texttt{reviews} DataFrame. 
+The same problem arose in \texttt{businesses} and \texttt{reviews} collection: there were users who have written some reviews but their \texttt{user\_id} was not in \texttt{users["user\_id"]}: I dropped them from \texttt{reviews} DataFrame. 
 
-Luckily,  $\texttt{reviews["buiness\_id"]} \subset \texttt{businesses["business\_id"]}$. 
+Luckily, $\texttt{reviews["buiness\_id"]} \subset \texttt{businesses["business\_id"]}$. 
 
-For each business, checkins are stored in the form of an array of dates. Pandas is not able to directly convert dates in it during reading \texttt{read\_json()} phase, so the following has been employed:
+For each business, check-ins are stored in the form of an array of dates. Pandas is not able to directly convert dates in it during reading phase, so the following was employed:
+
+\bigskip
+
 \begin{minted}{python}
 checkins["date"] = checkins["date"].str.split(", ")
 checkins["date"] = checkins["date"].apply(lambda x : pd.to_datetime(x, 
@@ -456,12 +458,15 @@ date.to_pydatetime() for date in x])
 \end{minted}
 
 \section{Data shaping}
-If we loaded users, businesses, reviews and checkins in DBMS and then query the DB with \texttt{\$lookup} (the MongoDB counterpart of SQL \texttt{join}) we wouldn't be leveraging the main feature of MongoDB that is embedding documents inside others.
+If I loaded users, businesses, reviews and check-ins in DBMS and then query the DB with \texttt{\$lookup} (the MongoDB counterpart of SQL \texttt{join}) I wouldn't be leveraging the main feature of MongoDB that is embedding documents inside others.
 
-The idea, here, was to embed \texttt{reviews} and \texttt{checkins} inside \texttt{businesses}. To do this, first reviews and checkins were grouped on \texttt{business\_id} obtaining relations of the form:
+The idea, here, was to embed \texttt{reviews} and \texttt{checkins} inside \texttt{businesses}. To do this, first reviews and check-ins were grouped on \texttt{business\_id} obtaining relations of the form:
 $$\texttt{business\_id} \longrightarrow \texttt{[reviews for that business\_id]}$$
 $$\texttt{business\_id} \longrightarrow \texttt{[checkins for that business\_id]}$$
 Then, a Pandas \texttt{merge} was performed:
+
+\bigskip
+
 \begin{minted}{python}
 businesses.merge(reviews_grouped.rename("reviews"), 
                  on = 'business_id', how = 'left')\
@@ -472,6 +477,9 @@ businesses.merge(reviews_grouped.rename("reviews"),
 \bigskip
 
 Finally, redundant \texttt{business\_id} column used in \texttt{merge} was removed. The resulting DataFrame (\texttt{buinesses\_merged}) was the following:
+
+\bigskip
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.1\columnwidth]{imgs/businesses_merged.png}
@@ -479,7 +487,12 @@ Finally, redundant \texttt{business\_id} column used in \texttt{merge} was remov
     \label{fig:businesses_merged}
 \end{figure}
 
-Same procedure was applied for \texttt{users} and \texttt{reviews}. We started by grouping reviews, this time, on \texttt{user\_id}, then we merged each group with the \texttt{users} DataFrame and finally we dropped redundant joining attribute \texttt{user\_id} from the resulting table. The resulting DataFrame \texttt{users\_merged} is the following:
+\bigskip
+
+Same procedure was applied for \texttt{users} and \texttt{reviews}. I started by grouping reviews, this time, on \texttt{user\_id}, then I merged each group with the \texttt{users} DataFrame and finally I dropped redundant joining attribute \texttt{user\_id} from the resulting table. The resulting DataFrame \texttt{users\_merged} is the following:
+
+\bigskip
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.1\columnwidth]{imgs/users_merged.png}
@@ -487,17 +500,22 @@ Same procedure was applied for \texttt{users} and \texttt{reviews}. We started b
     \label{fig:users_merged}
 \end{figure}
 
+\bigskip
+
 \cleardoublepage
 
 \chapter{Data ingestion and schema design}
-This chapter focuses on the processes of importing data into the database and defining its structure. It explains how the data is loaded into MongoDB collections and the schema design used to organize and store it effectively. By the end of the chapter, the dataset is ready for efficient querying and analysis.
+This chapter focuses on the process of importing data into the database and defining its structure. It explains how the data was loaded into MongoDB collections and the schema design used to organize and store it effectively. By the end of the chapter, the dataset will be ready for efficient querying and analysis.
 
 \section{Data loading}
-Loading that amount of documents directly through MongoDB GUI is infeasible, so we leveraged PyMongo and pre-computed Pandas DataFrames. 
+Loading that amount of documents directly through MongoDB GUI is infeasible, so PyMongo and pre-computed Pandas DataFrames were leveraged. 
 
 First, a connection was established with the server with the following statement: \\
 \verb|client = pymongo.MongoClient("mongodb://localhost:27017/")|; then, a DB instance was created \verb|db = client["yelp"]|. 
-To speed up the injection process, we employed batch loading: at each iteration a chunck (of size \texttt{batch\_size=1000}) of original DataFrame is inserted in the DB using \texttt{db[collection\_name].insert\_many(records)}. A TQDM progress bar is displayed for each collection.
+To speed up the injection process, I employed batch loading: at each iteration a chunck (of size \texttt{batch\_size = 1000}) of original DataFrame was inserted in the DB using \texttt{db[collection\_name].insert\_many(records)}. A TQDM progress bar was displayed for each collection.
+
+\bigskip
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\columnwidth / 2]{imgs/injection_process.png}
@@ -505,10 +523,12 @@ To speed up the injection process, we employed batch loading: at each iteration 
     \label{fig:injection_process}
 \end{figure}
 
-\section{Schema definition}
-As the reader will surely have noticed, not only the aggregated collections but also the individual collections resulting from the analysis and cleaning of the JSON files have been loaded into the database. This approach is intentional because some queries require working on single entities independently of their relationships with others.
+\bigskip
 
-While one might argue that this creates redundancy, it is a deliberate trade-off to improve performance. By having individual collections readily available, queries that do not depend on relationships can be executed faster and more efficiently, leveraging the strengths of MongoDB's design for targeted data access.
+\section{Schema definition}
+As the reader will surely have noticed, not only the aggregated collections but also the individual collections resulting from the analysis and cleaning of the JSON files were loaded into the database. This approach is intentional because some queries require working on single entities independently of their relationships with others.
+
+While one might argue that this creates redundancy, it is a deliberate trade-off to improve performance. By having individual collections readily available, queries that do not depend on relationships can be executed faster and more efficiently.
 
 Individual collections have the following shape:
 \begin{itemize}
@@ -583,7 +603,7 @@ Individual collections have the following shape:
 The structure of \texttt{businesses\_merged} and \texttt{users\_merged} is not shown because the reader can easily infer it from the previously presented tables.
 
 \section{Indexing}
-MongoDB assigns by default to each object a  unique ID. With such a large amount of data, it is fundamental to define custom indices to keep good queries performance. We did it directly in the notebook using PyMongo \texttt{create\_index()} method:
+MongoDB assigns by default to each object a unique ID. With such a large amount of data, it is fundamental to define custom indices to keep good queries performance. I did it directly in the notebook using PyMongo \texttt{create\_index()} method:
 
 \bigskip
 
@@ -616,13 +636,13 @@ where \texttt{unique = True} parameter tells MongoDB that index values are uniqu
 \cleardoublepage
 
 \chapter{Sentiment analysis}
-In this chapter, we present the preprocessing work done for sentiment analysis phase (extra). 
+In this chapter, the reader is presented with the preprocessing work done for sentiment analysis phase (extra). 
 
 \section{Sentiment analysis model}
 \label{sent_model}
 The model used for performing sentiment analysis is \texttt{distilbert-base-uncased-\\finetuned-sst-2-english} that is a lightweight, fine-tuned version of DistilBERT. It has been derived from the \texttt{distilbert-base-uncased} architecture by fine-tuning it on the Stanford Sentiment Treebank (SST-2) dataset. It classifies text into positive or negative categories. 
 
-We chose it because it is one of the most used models for social media monitoring, customer feedback analysis or product review assessments and it achieves high accuracy despite the compact size.
+I chose it because it is one of the most used models for social media monitoring, customer feedback analysis or product review assessments and it is able to achieve high accuracy despite its compact size.
 Furthermore, the fine-tuning process on SST-2 enhances the model's capability to identify nuanced emotional expressions, such as irony or strong sentiments. 
 
 It's said to be "uncased" because it treats upper / lower case letters in the same manner.
@@ -653,11 +673,13 @@ The output is:
 
 \verb|[{'label': 'POSITIVE', 'score': 0.9998623132705688}]|
 
-%AGGIUNGERE SE NECESSARIO LLA PARTE DI MODEL DEFINITION, OPPURE DIRE "RIMANDO AL NOTEBOOK PER LA SPEGAZIONE DEL CODICE"
 \section{Objective}
-%aggiungere che non è stat la prima cosa che abbiamo fatto, ma prima abbiamo fatto le queries (come gia detto), poi abbiamo aggiunto questa parte per studiare meglio la rlazione tra testo dele reviews e il resto.
+Sentiment analysis was not the first thing done after the dataset was loaded. The majority of the queries were performed, and, upon having analysed their results, the idea of applying sentiment analysis came up. 
+
+The ultimate goal was to bridge the gap between quantitative (stars) and qualitative (text) feedback to provide insights into user reviews. For example, by exploring the relationship between review sentiment and star ratings, I could assess how well the sentiment in text aligns with the corresponding star rating; cases where positive sentiment accompanies a low star rating, or vice versa, might provide insights of biases into user behaviour. Or, by segmenting users based on the typical sentiment of their reviews, I could assist businesses in better interpreting customer feedback. 
+
 \section{Methodology}
-In this section, we present how sentiment analysis pipeline was integrated with MongoDB. 
+In this section, we present how sentiment analysis pipeline was integrated with MongoDB existing collections. 
 
 \subsection{Data extraction}
 Firstly, data had to be retrieved and put in a DataFrame. A simple MongoDB query was written and executed:
@@ -680,10 +702,10 @@ reviews
 
 \bigskip
 
-Note that we don't keep \texttt{\_id} column, but only \texttt{review\_id} column because as mentioned in previous chapter, we created an index on it.  
+Note that \texttt{\_id} column wasn't kept, but only \texttt{review\_id} column because as mentioned in previous chapter, I created an index on it.  
 
 \subsection{Model usage}
-The main class if \texttt{SentimentAnalyzer}.
+The main class is \texttt{SentimentAnalyzer}.
 
 First, text was preprocessed: each review text was mapped into numerical tokens that the model is able to understand. Naturally, text varies in length, so padding and truncation were used to ensure consistent input lengths:
 
@@ -701,10 +723,10 @@ if self.device == "cuda":
     self.model = self.model.half()
 \end{verbatim}
 
-Dataset consisted in about $7$ million reviews and all of them needed to be processed to have a good result, so batching and chunking strategies were applied:
+Dataset consisted of about $7$ million reviews and all of them needed to be processed to have a good result, so batching and chunking strategies were applied:
 \begin{itemize}
-    \item Chunks: large portions of the dataset (e.g. $10,000$ reviews) that get loaded into memory and stored in CSV file at once;
-    \item (Mini-) Batches: smaller groups (e.g. $512$ reviews) within each chunk that are processed together by the GPU.
+    \item Chunks: large portions of the dataset (e.g. $10,000$ reviews) that were loaded into memory and stored in CSV file at once;
+    \item (Mini-) Batches: smaller groups (e.g. $512$ reviews) within each chunk that were processed together by the GPU.
 \end{itemize}
 
 This was implemented as nested loops:
@@ -716,9 +738,7 @@ for start_idx in range(0, total_rows, chunk_size):
         batch_df = chunk_df.iloc[batch_start : batch_end]
 \end{verbatim}
 
-Once defined the \texttt{analyzer}, we used it:
-
-\bigskip
+Once having defined the \texttt{analyzer}, I used it:
 
 \begin{minted}{python}
 analyzer = SentimentAnalyzer("""distilbert-base-uncased-finetuned
@@ -729,14 +749,23 @@ analyzer.process_reviews(reviews,
                          "sentiment_results.csv", 10000)
 \end{minted}
 
+where \texttt{max\_length} is the maximum number of tokens in which text will be split up by the tokenizer. The model was trained and fine-tuned with sequences of maximum length of $512$, so all values below should be fine. By inspecting the distribution of number of tokens per reviews, $256$ seemed a good compromise between performance and expressiveness:
+
 \bigskip
 
-where \texttt{max\_length} is the maximum number of tokens in which text will be split up by the tokenizer. The model was trained and fine-tuned with sequences of maximum length of $512$, so all values below should be fine. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\columnwidth / 4]{imgs/num_tokens.png}
+    \caption{Distribution of number of tokens}
+    \label{fig:token_distr}
+\end{figure}
+
+\bigskip
 
 The resulting CSV file contained on each line a triplet: \texttt{(review\_id, sentiment, \\score)}
 
 \subsection{Collections update}
-Both \texttt{reviews}, \texttt{users\_merged} and \texttt{businesses\_merged} had to be updated by adding the new fields. To do this in an efficient way, we converted the resulting DataFrame to a dictionary and then, we leveraged  \texttt{pyMongo.updateOne()} along with \texttt{bulk\_write()}. We chose to use \texttt{bulk\_write()} to reduce as much as possible the number of transactions (so the latency); namely, this method is able to perform multiple write operations (inserts, updates or deletes) in a single request to the database. 
+Both \texttt{reviews}, \texttt{users\_merged} and \texttt{businesses\_merged} had to be updated by adding the new fields. To do this in an efficient way, I converted the resulting DataFrame to a dictionary and then, I leveraged  \texttt{pyMongo.updateOne()} along with \texttt{bulk\_write()}. I chose to use \texttt{bulk\_write()} to reduce as much as possible the number of transactions; namely, this method is able to perform multiple write operations (inserts, updates or deletes) in a single request to the database. 
 
 Different collections required different update strategies:
 \begin{itemize}
@@ -757,7 +786,7 @@ db["reviews"].bulk_write([
     
     \bigskip
 
-    \item In \texttt{businesses\_merged}, each \texttt{business\_id} maps a set of reviews. So, we needed a dictionary $\texttt{review\_id} \longrightarrow \texttt{business\_id}$ \\and an additional index on \texttt{reviews.review\_id} that is sparse because some documents might didn't have \texttt{reviews} sub-collection:
+    \item In \texttt{businesses\_merged}, each \texttt{business\_id} mapped a set of reviews. So, I needed a dictionary $\texttt{review\_id} \longrightarrow \texttt{business\_id}$ \\and an additional index on \texttt{reviews.review\_id} that is sparse because some documents might not have \texttt{reviews} sub-collection:
     \bigskip
     
     \begin{minted}{python}
@@ -766,7 +795,7 @@ db["businesses_merged"].create_index(["reviews.review_id"],
     \end{minted}
     
     \bigskip
-    In the filter condition of \texttt{updateOpne()}, the review is located by looking at \texttt{business\_id} and \texttt{reviews.review\_id}. Then, in \texttt{\$set}, \texttt{\$} is used to catch the matching document(s) to insert the new fields.
+    In the filter condition of \texttt{updateOpne()}, the review is located by looking at \texttt{business\_id} and \texttt{reviews.review\_id}. Then, in \texttt{\$set}, \texttt{\$} is used to catch the matching document(s) to insert the new fields into.
     \bigskip
     
     \begin{minted}{python}
@@ -788,18 +817,17 @@ db["businesses_merged"].create_index(["reviews.review_id"],
     
     \bigskip
 
-    \item In \texttt{users\_merged} same challenges of \texttt{businesses\_merged} were faced. We repeated what is shown in the previous case.
+    \item In \texttt{users\_merged} same challenges of \texttt{businesses\_merged} were faced. I repeated what is shown in the previous case.
 \end{itemize}
 
 \cleardoublepage
 
 \chapter{Queries}
-%Aggiungere nella query con lookup "notare quanto utile data normailization è stat per non dovre stare a controllare se un certo indice esiste pure nell'altra tabella"
 In this chapter, the user is presented with the queries performed in MongoDB. All of them were executed within a Jupyter Notebook connected to MongoDB instance using \texttt{PyMongo}. Some interesting results were visualized using \texttt{matplotlib.pyplot}, \texttt{seaborn} libraries.
 
-\section{Query 1: How many businesses and reviews are there for each category?}
+\section{Query 1: how many businesses and reviews for each category?}
 
-The purpose of this query is to count the total number of businesses and reviews for each category of businesses.
+The purpose of this query was to count the total number of businesses and reviews for each category of businesses.
 
 \bigskip
     
@@ -917,20 +945,26 @@ In the notebook, under \texttt{Query 1} subsection, the reader will find another
 \bigskip
 
 Although taking different times, all the queries produce the same resulting DataFrame:
+
+\bigskip
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\columnwidth]{imgs/businesses_and_reviews_per_category.png}
+    \includegraphics[width=2\columnwidth / 3]{imgs/businesses_and_reviews_per_category.png}
     \caption{Number businesses and reviews per category}
     \label{fig:num_businesses_and_reviews_per_category}
 \end{figure}
-The result shows that there are $1,311$ there is a wide variety of categories and businesses. \textit{"Restaurants"} and \textit{"Food"} categories dominate in terms of both the number of reviews ($4.7\text{M}$ and $1.8\text{M}$, respectively) and businesses ($52,268$ and $27,781$), making them highly competitive sectors. 
+
+\bigskip
+
+The result show that there are $1,311$ different categories. \textit{"Restaurants"} and \textit{"Food"} categories dominate in terms of both the number of reviews ($4.7\text{M}$ and $1.8\text{M}$, respectively) and businesses ($52,268$ and $27,781$), making them highly competitive sectors. 
 
 On the other hand, categories like \textit{"Home Services"} ($238,255$ reviews, $14,356$ businesses) and \textit{"Beauty \& Spas"} ($370,120$ reviews, $14,292$ businesses) are subject to moderate competition with still a quite significant demand.
 
-A possible conclusion is that even if the first categories may still offer growth opportunities, new investments would probably have more success in the others. For niche opportunities, categories with fewer businesses but steady demand, such as "Shopping", could also be worth exploring. 
+A possible conclusion is that, even if the first categories may still offer growth opportunities, new investments would probably have more success in the others. For niche opportunities, categories with fewer businesses but steady demand, such as "Shopping", could also be worth exploring. 
 
-\section{Query 2: For each category, find the most polarizing business}
-We say that a business is \textit{"polarizing"} if it is a one with high variance in star rating. The objective of this query is to identify, for each category, the most polarizing business.
+\section{Query 2: for each category, find the most polarizing business}
+We say that a business is \textit{"polarizing"} if it is one with high variance in star rating. The objective of this query was to identify, for each category, the most polarizing business.
 
 For this query, \texttt{\$stdDevPop} was employed.
 
@@ -1047,7 +1081,7 @@ In the query, only businesses with at least 50 reviews were selected to minimize
 
 Note that the number of reviews and the average star ratings are relatively consistent across categories: this is important because it means that a uniform sample was chosen. 
 
-\section{Query 3: Find in which city a chain of businesses performs the best}
+\section{Query 3: find in which city a chain of businesses performs the best}
 A chain of businesses is a set of \texttt{business\_id} with the same \texttt{name} but different \texttt{city}. The goal of this query is to discover in which city a chain of businesses performs the best. Note that in a city there could be more than one \texttt{business\_id} with the same name.
 
 In the first step of the query, all the necessary documents were retrieved using MongoDB:
@@ -1162,9 +1196,10 @@ df = df[df["name"].isin(more_than_one_city["name"])]
 
 \bigskip
 
-We opted for a composite query because computing and intersecting \texttt{more\_than\_one\_city} and \texttt{ratings} in a single query wasn't trivial (it could be done, but it would require the usage of \texttt{\$facet}).
+I opted for a composite query because computing and intersecting \texttt{more\_than\_one\_city} and \texttt{ratings} in a single query wasn't trivial (it could be done, but it would require the usage of \texttt{\$facet}).
 
 The results are summarized in the following DataFrame:
+
 \bigskip
 
 \begin{figure}[H]
@@ -1176,12 +1211,12 @@ The results are summarized in the following DataFrame:
 
 \bigskip
 
-\section{Query 4: Establish whether local competitions influences average and variance review stars}
-Two businesses $\texttt{b}_1$ and $\texttt{b}_2a$ are said to be competitors if they share at least one category (i.e. $\texttt{b}_1\texttt{.category} \cap \texttt{b}_2\texttt{.category} \neq \{\emptyset\}$ and they work in the same city (i.e. $\texttt{b}_1\texttt{.city} = \texttt{b}_2\texttt{.city}$). 
+\section{Query 4: establish whether local competitions influences average and variance review stars}
+Two businesses $\texttt{b}_1$ and $\texttt{b}_2$ are said to be competitors if they share at least one category (i.e. $\texttt{b}_1\texttt{.category} \cap \texttt{b}_2\texttt{.category} \neq \{\emptyset\}$ and they work in the same city (i.e. $\texttt{b}_1\texttt{.city} = \texttt{b}_2\texttt{.city}$). 
 
-With this query, we study if there is a relation between the average (variance) of reviews' stars and the number of competitors for the most widespread businesses. 
+With this query, I studied whether there was a relation between the average (variance) of reviews' stars and the number of competitors for the most widespread businesses. 
 
-As done in the previous query, we proceeded with a two-steps query. In the first one, all relevant documents were shaped and retrieved:
+As done in the previous query, I proceeded with a two-steps query. In the first one, all relevant documents were shaped and retrieved:
 \begin{itemize}
     \item \texttt{competitors}: for each \texttt{name} and \texttt{city}, the number of competitors was computed. 
 
@@ -1255,7 +1290,7 @@ db["businesses"].aggregate([{
 
 \bigskip
 
-All possible competitors were found by collecting businesses' names for each \texttt{(city, category)} in \texttt{businesses\_names}, duplicating this field, unwinding it, recollecting the businesses' names for each \texttt{(name, city)} into \texttt{possible\_competitors} and, finally, filtering it to exclude businesses with \texttt{name} equal to \texttt{\_id.name}. 
+The reasoning behind this query is quite complex; to fully understand it, it's better to outline the structure oof documents after each stage:
 
 \begin{enumerate}
 \item In the \texttt{\$unwind} stage documents with multiple categories were split, creating separate documents for each category.
@@ -1317,7 +1352,8 @@ db["businesses_merged"].aggregate([
 
 \end{itemize}
 
-In the second step of the query, the two resulting DatFrames were merged using Pandas:
+In the second step of the query, the two resulting DataFrames were merged using Pandas:
+
 \bigskip 
 
 \begin{minted}{python}
@@ -1356,7 +1392,7 @@ Further analysis was executed on the $50$th to $55$th most widespread businesses
 
 The star variance also varies widely, For example, \textit{Dairy Queen Grill \& Chill} in Spring Hill shows high variance ($1.77$), whereas \textit{Waffle House} in Lawrence has a more consistent satisfaction level ($1.23$).
 
-We concluded that competition may influence ratings, but this is not an universal rule because the relationship is shaped, also, by local factors and customer expectations.
+I concluded that competition may influence ratings, but this is not an universal rule because the relationship is shaped, also, by local factors and customer expectations.
 
 \section{Query 5: are day and night reviews biased?}
 The aim of this query was to investigate whether there was a discrepancy in the reviews of the day and night for each user. Such discrepancy was estimated using average star rating.
@@ -1438,7 +1474,10 @@ db["reviews"].aggregate([{
 
 \bigskip
 
+In the notebook, under \texttt{Query 5} subsection, the reader will find another version of this query (here not shown for the sake of shortness) that combines MongoDB and Pandas.
+
 Some results:
+
 \bigskip
 
 \begin{figure}[H]
@@ -1450,14 +1489,12 @@ Some results:
 
 \bigskip
 
-The distribution of reviews was stable across day and night. The mean difference is $0$: this means that the majority of users give similar ratings during day and night. However, a part of users seems to be stricter during night because bars below $0$ are higher than the symmetric ones (w.r.t $x = 0$). A deeper statistical analysis could determine if these patterns are meaningful or coincidental.
-
-In the notebook, under \texttt{Query 5} subsection, the reader will find another version of this query (here not shown for the sake of shortness) that combines MongoDB and Pandas.
+The distribution of reviews is stable across day and night. The mean difference is $0$: this means that the majority of users give similar ratings during day and night. However, a part of users seems to be stricter during night because bars below $0$ are higher than the symmetric ones (w.r.t $x = 0$). A deeper statistical analysis could determine if these patterns are meaningful or coincidental.
 
 \section{Query 6: friends have similar ratings?}
-This query was designed to examine the similarity in rating behaviours among friends by focusing on businesses they have both reviewed. Such similarity is measured in terms of difference between average review stars.
+This query was designed to examine the similarity in rating behaviours among friends by focusing on businesses they have both reviewed. Such similarity was quantified in terms of difference between average review stars.
 
-As done in the previous queries, we proceeded with a two-steps query. In the first one, all relevant documents were shaped and retrieved:
+As done in the previous queries, I proceeded with a two-steps query. In the first one, all relevant documents were shaped and retrieved:
 \begin{itemize}
     \item \texttt{avg\_rating}: for each \texttt{user\_id} and \texttt{business\_id}, average star rating was computed. 
 
@@ -1498,7 +1535,7 @@ db["businesses_merged"].aggregate([{
 
 \bigskip
 
-\item \texttt{common\_ratings}: for each \texttt{user\_id} and \texttt{user\_id} of friends, common \texttt{business\_id} of common reviewed businesses were found. 
+\item \texttt{common\_ratings}: for each \texttt{user\_id} and \texttt{user\_id} of friends, \texttt{business\_id} of common reviewed businesses were found. 
 
 \bigskip
 
@@ -1610,7 +1647,6 @@ To better understand the reasoning behind this query, the structure of the docum
 
 \item \texttt{\$project}: now-redundant \texttt{friends} array is removed.
 
-
 \item \texttt{\$addFields}: with \texttt{\$map} operator, the intersection of reviewed businesses between the user and each friend was computed.
 
 \begin{lstlisting}[language=json]
@@ -1628,7 +1664,7 @@ To better understand the reasoning behind this query, the structure of the docum
 }
 \end{lstlisting}
 
-\item \texttt{\$project}: \texttt{reviews} and \texttt{friend\_reviews} arrays are removed.
+\item \texttt{\$project}: \texttt{reviews} and \texttt{friend\_reviews} arrays were removed.
 
 \item \texttt{\$addFields}: with \texttt{\$filter} entries where users share no common reviews are removed. Structure is same as previous.
 
@@ -1644,7 +1680,7 @@ To better understand the reasoning behind this query, the structure of the docum
 }
 \end{lstlisting}
 
-\item \texttt{\$project}: \texttt{\_id} field is removed. 
+\item \texttt{\$project}: \texttt{\_id} field is removed, resulting in the following:
 
 \begin{lstlisting}[language=json]
 {
@@ -1659,7 +1695,7 @@ To better understand the reasoning behind this query, the structure of the docum
 
 \bigskip
 
-\item In the second stage of the query, we combined the results collected before. Because DataFrame indexing is slow, we transformed \texttt{avg\_rating} in a dict of dicts:
+\item In the second stage of the query, I combined the results collected before. Because DataFrame indexing is slow, I transformed \texttt{avg\_rating} in a dict of dicts:
 
 \bigskip 
 
@@ -1672,7 +1708,8 @@ avg_rating.reset_index()\
 
 \bigskip
 
-Then, for each document in \texttt{common\_reviewed} we retrieved ratings for both the user and one of his / her friend (there could be more than one commonly reviewed businesses) and we computed their average. 
+Then, for each document in \texttt{common\_reviewed} I retrieved ratings for both the user and one of his / her friend (there could be more than one commonly reviewed businesses) and their averages were computed: 
+
 \bigskip 
 
 \begin{minted}{python}
@@ -1707,19 +1744,100 @@ The following histogram shows the results:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=3\columnwidth / 4]{imgs/query_6.png}
+    \includegraphics[width=2\columnwidth / 3]{imgs/query_6.png}
     \caption{User's average reviews star - his / her friends average reviews stars}
     \label{fig:query_6}
 \end{figure}
 
 \bigskip
 
-The distribution is centered around zero, which suggests that users and their friends tend to give similar ratings: with a probability of $0.35$ the $\Delta$ it's exactly in $0$-bin and if we consider $-1$ to $1$ bins, about $0.75$ of total users are covered. There are, however, a few cases where the differences in ratings are more extreme, ranging from $-4$ to $+4$ (users either rated a business significantly higher or lower than their friends). Despite these deviations, the red dashed line, representing the mean difference, lies precisely at zero. 
+The distribution is centered around zero, which suggests that users and their friends tend to give similar ratings: with probability of $0.35$, the $\Delta$ it's exactly in $0$-bin and if we consider $-1$ to $1$ bins, about $0.75$ of total friend pairs are covered. There are, however, a few cases where the differences in ratings are more extreme, ranging from $-4$ to $+4$ (users either rated a business significantly higher or lower than their friends). Despite these deviations, the red dashed line, representing the mean difference, lies precisely at zero. 
 
-\section{Query 7:}
+\section{Query 7: yearly growth rate of businesses}
+The growth rate of a business is defined as $g_{B, i}=\frac{n_{B, i + 1} - n_{B, i}}{n_{B, i}}$ where $n_{B, i}$ is the number of check-ins for business $B$ in year $i$. The objective of this query was to compute the growth rate of all businesses such that $\exists i, j \in [\texttt{start\_date}, \texttt{end\_date}] \,\, | \,\, i < j \land \forall k \in [i, j] \,\, | \,\, n_{B, k} > 0$ with \texttt{start\_date} and \texttt{end\_date} query parameters.
+
+\bigskip
+
+\begin{lstlisting}[style = mongodb]
+db["businesses_merged"].aggregate([{
+        "$unwind" : "$checkins"
+    },
+    {
+        "$addFields" : {
+            "year_checkin" : {
+                "$year" : "$checkins"
+            }
+        }
+    },
+    {
+        "$match" : {
+            "$and" : [{"year_checkin" : {"$gte" : start}}, 
+                    {"year_checkin" : {"$lte" : end}}]
+        }
+    },
+    {
+        "$group" : {
+            "_id" : {
+                "name" : "$name",
+                "city" : "$city",
+                "year" : "$year_checkin"
+            },
+            "num_checkins" : {
+                "$sum" : 1
+            }
+        }
+    },
+    {
+        "$sort" : {
+            "_id.name" : 1,
+            "_id.city" : 1,
+            "_id.year" : 1
+        }
+    },
+    {
+        "$group" : {
+            "_id" : {
+                "name" : "$_id.name",
+                "city" : "$_id.city"
+            },
+            "checkins_sequence" : {
+                "$push" : {
+                    "year" : "$_id.year",
+                    "num_checkins" : "$num_checkins"
+                }
+            }
+        }
+    },
+    {
+        "$project" : {
+            "_id" : 0,
+            "name" : "$_id.name",
+            "city" : "$_id.city",
+            "checkins_sequence" : 1
+        }
+    }
+])    
+\end{lstlisting}
+
+\bigskip
+
+There were businesses with $n_{B, i} = 0$ and $n_{B, i - 1} \neq 0 \,\,\land \,\, n_{B, i + 1} \neq 0$, so the results of this query had to be filtered and the growth had to be computed. The Python code is available under \texttt{Query 7} subsection of \texttt{Queries} notebook. In particular, note the \texttt{calculate\_and\_filter\_trend} method that takes in input a \texttt{lambda} function \texttt{filter} to specify conditions on growth rate.
+
+For the business with the longest sequence of registered check-ins, both $n_{B, i}$ and $g_{B, i}$ were plotted:
+
+\bigskip
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{imgs/query_7.png}
+    \caption{Check-ins and yearly growth rate sequence for the selected business}
+    \label{fig:query_7}
+\end{figure}
+
+\bigskip
 
 \section{Query 8: city with lowest sentiment for each category}
-For each category, the city with the lowest sentiment for that category (i.e. strictest users reviewing it) was determined. To have a less biased result, only categories with sufficient number of positive and negative reviews (at least $50$ for each one) were considered.
+For each category, the cities with the lowest sentiment for that category was determined. To have a less biased result, only categories with sufficient number of positive and negative reviews (at least $50$ for each one) were considered.
 
 \bigskip
 
@@ -1791,7 +1909,7 @@ db["businesses_merged"].aggregate([{
 
 \bigskip
 
-Then, using Pandas, widespread categories (i.e. categories in resulting DataFrame present in more than $15$ lines) were computed and for the top $3$ an histogram was plotted: 
+Upon having all documents, using Pandas, widespread categories (i.e. categories in resulting DataFrame present in more than $15$ lines) were computed and for the top $3$ an histogram was plotted: 
 
 \bigskip
 
@@ -1914,12 +2032,14 @@ The following histogram shows the results:
 
 \bigskip
 
-Most businesses have average review ratings in the range of $3.0 - 4.0$, with the most common ones observed at $[3.0, 3.5)$ and $[3.5, 4.0)$, with about $14,000$ reviews each. As ratings decrease below $3.0$ or increase above $4.0$, the number of businesses drops significantly: very few businesses have average ratings below $0.5$ or above $4.5$.
+Most businesses have average review ratings in the range of $3.0 - 4.0$, with about $14,000$ for both $[3.0, 3.5)$ and $[3.5, 4.0)$. As ratings decrease below $3.0$ or increase above $4.0$, the number of businesses drops significantly: very few businesses have average ratings below $0.5$ or above $4.5$.
 
 \section{Query 10: investigate the relation between sentiment and stars of reviews}
-As mentioned in \ref{sent_model}, DistilBert's outputs come with a confidence measure (also called score). For each star value, we counted the number of reviews with positive and negative sentiments. Then, we computed the minimum confidence $m=\min_i\,\,\text{confidence}_i$ and $M=\max_i \,\, \text{confidence}_i$ and defined:
+As mentioned in \ref{sent_model}, DistilBert's outputs come with a confidence measure (also called \textit{score}). 
+
+For each star value, I counted the number of reviews with positive and negative sentiments. Then, I computed the minimum confidence $m=\min_i\,\,\text{confidence}_i$ and $M=\max_i \,\, \text{confidence}_i$ and defined:
 $$\left[m, m + \frac14(M-m), m+\frac12(M-m), m+\frac34(M-m), M\right]$$
-For each star and bin, we counted the number of reviews with the that number of stars and confidence in that bin.
+For each star and bin, I counted the number of reviews with the that number of stars and confidence in that bin.
 
 Two steps were performed for this query:
 \begin{itemize}
@@ -2000,7 +2120,7 @@ db["reviews"].aggregate([{
 
 \bigskip
 
-In particular, to avoid repeating very similar lines of code different times, we opted for dict unpacking (\texttt{**bin\_fields}) inside the \texttt{\$group} stage (the reader can look at specific code in the \texttt{Query 9} section of the \texttt{Query} notebook).
+In particular, to avoid repeating very similar lines of code different times, I opted for dict unpacking (\texttt{**bin\_fields}) inside the \texttt{\$group} stage (the reader can look at specific code in the \texttt{Query 9} section of the \texttt{Queries} notebook).
 
 \end{itemize}
 
@@ -2202,28 +2322,10 @@ For many businesses, the filtering process slightly increased the average rating
 
 The conclusion is that identifying and accounting for sentiment-star discrepancies can improve the reliability of aggregated ratings and better reflect actual customer experiences.
 
-%-------------------------------------------------------------------------
-%	APPENDICES
-%-------------------------------------------------------------------------
-
-%\cleardoublepage
-%\addtocontents{toc}{\vspace{2em}} % Add a gap in the Contents, for aesthetics
-%\appendix
-%\chapter{Appendix A}
-%If you need to include an appendix to support the research in your thesis, you can place it at the end of the %manuscript.
-%An appendix contains supplementary material (figures, tables, data, codes, mathematical proofs, surveys, \dots)
-%which supplement the main results contained in the previous chapters.
-
-\bigskip 
-
-\cleardoublepage
-
 % LIST OF FIGURES
 \listoffigures
 
 % LIST OF TABLES
 \listoftables
-
-\cleardoublepage
 
 \end{document}

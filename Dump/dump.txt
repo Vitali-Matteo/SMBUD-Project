@@ -1,0 +1,2 @@
+For the Yelp dataset: https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset (official source: https://www.yelp.com/dataset)
+Link to computed sentiments: https://drive.google.com/file/d/1CFDMDU9a_vAcMv4zYepaKcFZYfNJtAZj/view?usp=drive_link
