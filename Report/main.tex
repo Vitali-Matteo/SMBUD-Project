@@ -241,7 +241,7 @@ Methods for Big and Unstructured Data course} at Politecnico di Milano.
 
 \section{Objective}
 \label{sec:Objective}
-The objective of this project is to design and perform 10 queries on a publicly available dataset employing a No-SQL technology (Neo4j, MongoDB and Elasticsearch). In this way, valuable insights could be extracted from the collected data and, at the same time, knowledge acquired during the course on one of these Database Management Systems (DBMSs) could be applied in practice.
+The objective of this project is to design and perform 10 queries on a publicly available dataset employing a No-SQL technology (Neo4j, MongoDB or Elasticsearch). In this way, valuable insights could be extracted from the collected data and, at the same time, knowledge acquired during the course on one of these Database Management Systems (DBMSs) could be applied in practice.
 
 \section{Dataset overview}
 The following analysis is based on Yelp dataset that can been found on \href{https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset}{Kaggle} or on the official \href{https://www.yelp.com/dataset}{Yelp's page}. 
@@ -372,7 +372,7 @@ Here, the reader can find an example of each document:
 \end{itemize}
 
 \section{Methodology}
-In this project, an organizational approach is adopted to analyse the dataset: the ultimate goal, namely, consists of extracting actionable insights to support decision-making within the business and having a deeper understanding of customer behaviour. 
+In this project, an organizational approach is adopted to analyse the dataset: the ultimate goal, namely, consists of extracting actionable insights to support decision-making within the businesses and having a deeper understanding of customer behaviour. 
 
 \bigskip
 
@@ -384,17 +384,17 @@ For this project, MongoDB was used.
 \subsection{MongoDB overview}
 MongoDB is a document-oriented, open source database system that organizes data using a JSON-like document structure. It offers speed, scalability, and performance when handling large datasets by leveraging its distributed architecture. Its compatibility with JSON / CSV makes it an excellent choice for managing web data or scientific dataset.
 
-MongoDB supports flexible document structure that is necessary when dealing with changing data requirements. It also offers powerful aggregation pipelines and geospatial data processing. As a document-based database, MongoDB is performs data retrieval without the need for resource-intensive join operations commonly used in relational databases.
+MongoDB supports flexible document structure that is necessary when dealing with changing data requirements. It also offers powerful aggregation pipelines and geospatial data processing. As a document-based database, MongoDB performs data retrieval without the need for resource-intensive join operations commonly used in relational databases.
 
 \subsection{Technology selection criteria}
-As the reader will see, I heavily relied on MongoDB's flexible schema design for data analysis. Namely, diverse data structures can be stored in each document, without enforcing rigid constraints: think, for example, to business attributes, user profiles that are have naturally different formats and values. Moreover, when new features are added or queries' objectives change, we can immediately start storing and analysing new fields without schema migrations.
+As the reader will see, I heavily relied on MongoDB's flexible schema design for data analysis. Namely, diverse data structures can be stored in each document, without enforcing rigid constraints: think, for example, to business attributes, user profiles that are have naturally different formats and values. Moreover, when new features are added or queries' objectives change, I can immediately start storing and analysing new fields without schema migrations.
 
 Instead of splitting related data across multiple collections, MongoDB can store a business entity along with its reviews, check-ins, and other related data in a single document, reducing the need for \texttt{\$lookup}s and making the queries more straightforward to write. 
 
 Under the hood, MongoDB's WiredTiger storage engine caches frequently accessed data in memory while the rest on disk. Especially for large datasets, like the one in analysis, this is a key point for guaranteeing faster query execution and better resource utilization.
 
 
-Neo4j has been considered as alternative to MongoDB. Namely, the most important relations that emerge from inferred ER model are: $\texttt{(:User) -> [:REVIEWS] -> (:Business)}$,  $\texttt{(:User) -> [:ENTERS] -> (:Business)}$,  $\texttt{(:User) -> [:HAS\_FRIEND] -> (:User)}$. \\ For queries to be performed, Neo4j wouldn't be the optimal tool for several reasons. First, Neo4j's strength lies in handling complex relationships and path queries, which aren't the primary focus of business and review analysis. Then, Neo4j doesn't provide the same level of flexibility in document structure that MongoDB offers, making it more difficult to handle varying business attributes and review formats. Moreover, Neo4j is not optimized for running aggregation queries over the entire graph, so performing historical analysis over such a model isn't suitable.
+Neo4j has been considered as an alternative to MongoDB. Namely, the most important relations that emerge from the model are: $\texttt{(:User) -> [:REVIEWS] -> (:Business)}$,  $\texttt{(:User) -> [:ENTERS] -> (:Business)}$,  $\texttt{(:User) -> [:HAS\_FRIEND] -> (:User)}$. \\ For queries to be performed, Neo4j wouldn't be the optimal tool for several reasons. First, Neo4j's strength lies in handling complex relationships and path queries, which aren't the primary focus of business and review analysis. Then, Neo4j doesn't provide the same level of flexibility in document structure that MongoDB offers, making it more difficult to handle varying business attributes and review formats. Moreover, Neo4j is not optimized for running aggregation queries over the entire graph, so performing historical analysis over such a model isn't suitable.
 
 
 Elasticsearch is excellent for full-text search and real-time log analysis, but it presents several limitations when it comes to analyse businesses and reviews data. First, its primary storage architecture is optimized for search operations rather than analytical queries: it excels at finding and retrieving documents based on text content, but it's way more inefficient in aggregations or joins that are common in my analysis. Vice versa, MongoDB's aggregation pipeline provides a more natural and efficient approach. 
@@ -426,7 +426,7 @@ The primary objective of data cleaning phase was to search for \texttt{null} val
 
 \bigskip
 
-This is not surprising at all because some businesses might not have specified opening hours or attributes. For $103$ businesses no category is specified. It seems like that having one of them \texttt{null} is uncorrelated with the others being \texttt{null}, so I'll let MongoDB handle the missing fields.
+This is not surprising at all because some businesses might not have specified opening hours or attributes. For $103$ businesses no category is specified. It seemed like that having one of them \texttt{null} was uncorrelated with the others being \texttt{null}, so I let MongoDB handle the missing fields.
 
 \section{Data normalization}
 In this part of the preprocessing, I dived deeper into the DataFrames to prepare them for the following shaping phase. 
@@ -439,7 +439,7 @@ The same problem arose in \texttt{businesses} and \texttt{reviews} collection: t
 
 Luckily, $\texttt{reviews["buiness\_id"]} \subset \texttt{businesses["business\_id"]}$. 
 
-For each business, check-ins are stored in the form of an array of dates. Pandas is not able to directly convert dates in it during reading phase, so the following was employed:
+For each business, check-ins were stored in the form of an array of dates. Pandas is not able to directly convert dates in it during reading phase, so the following was employed:
 
 \bigskip
 
@@ -458,7 +458,7 @@ date.to_pydatetime() for date in x])
 \end{minted}
 
 \section{Data shaping}
-If I loaded users, businesses, reviews and check-ins in DBMS and then query the DB with \texttt{\$lookup} (the MongoDB counterpart of SQL \texttt{join}) I wouldn't be leveraging the main feature of MongoDB that is embedding documents inside others.
+If I loaded users, businesses, reviews and check-ins in DBMS and then query the DB with \texttt{\$lookup} (the MongoDB counterpart of SQL \texttt{join}), I wouldn't have been leveraging the main feature of MongoDB that is embedding documents inside others.
 
 The idea, here, was to embed \texttt{reviews} and \texttt{checkins} inside \texttt{businesses}. To do this, first reviews and check-ins were grouped on \texttt{business\_id} obtaining relations of the form:
 $$\texttt{business\_id} \longrightarrow \texttt{[reviews for that business\_id]}$$
@@ -505,10 +505,10 @@ Same procedure was applied for \texttt{users} and \texttt{reviews}. I started by
 \cleardoublepage
 
 \chapter{Data ingestion and schema design}
-This chapter focuses on the process of importing data into the database and defining its structure. It explains how the data was loaded into MongoDB collections and the schema design used to organize and store it effectively. By the end of the chapter, the dataset will be ready for efficient querying and analysis.
+This chapter focuses on the process of importing data into the database and defining its structure. It explains how the data was loaded into MongoDB and the schema design used to organize and store it effectively. By the end of the chapter, the dataset will be ready for efficient querying and analysis.
 
 \section{Data loading}
-Loading that amount of documents directly through MongoDB GUI is infeasible, so PyMongo and pre-computed Pandas DataFrames were leveraged. 
+Loading that amount of documents directly through MongoDB GUI was infeasible, so PyMongo and pre-computed Pandas DataFrames were leveraged. 
 
 First, a connection was established with the server with the following statement: \\
 \verb|client = pymongo.MongoClient("mongodb://localhost:27017/")|; then, a DB instance was created \verb|db = client["yelp"]|. 
@@ -526,15 +526,15 @@ To speed up the injection process, I employed batch loading: at each iteration a
 \bigskip
 
 \section{Schema definition}
-As the reader will surely have noticed, not only the aggregated collections but also the individual collections resulting from the analysis and cleaning of the JSON files were loaded into the database. This approach is intentional because some queries require working on single entities independently of their relationships with others.
+As the reader will surely have noticed, not only the aggregated collections but also the individual collections resulting from the analysis and cleaning of the JSON files were loaded into the database. This approach was intentional because some queries required working on single entities independently of their relationships with others.
 
-While one might argue that this creates redundancy, it is a deliberate trade-off to improve performance. By having individual collections readily available, queries that do not depend on relationships can be executed faster and more efficiently.
+While one might argue that this created redundancy, it was a deliberate trade-off to improve performance. By having individual collections readily available, queries that do not depend on relationships can be executed faster and more efficiently.
 
 Individual collections have the following shape:
 \begin{itemize}
 
 \item{\texttt{businesses}}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{10cm}|}
+\begin{longtable}{|p{3cm}|p{3cm}|p{10cm}|}
 \hline
 \textbf{Field Name} & \textbf{Type} & \textbf{Description} \\ \hline
 \texttt{business\_id} & \texttt{string} & Unique identifier for the business (22 characters). \\ \hline
@@ -548,21 +548,21 @@ Individual collections have the following shape:
 \texttt{stars} & \texttt{float} & Star rating, rounded to half-stars. \\ \hline
 \texttt{review\_count} & \texttt{integer} & Number of reviews for the business. \\ \hline
 \texttt{is\_open} & \texttt{integer} & Indicates whether the business is open (1 for open, 0 for closed). \\ \hline
-\texttt{attributes} & \texttt{object} & Key-value pairs of business attributes (e.g., parking availability). \\ \hline
-\texttt{categories} & \texttt{array} & Array of strings representing business categories. \\ \hline
-\texttt{hours} & \texttt{object} & Key-value pairs of operating hours by day. \\ \hline
+\texttt{attributes} & \texttt{dict} & Key-value pairs of business attributes (e.g., parking availability). \\ \hline
+\texttt{categories} & \texttt{array[string]} & Array of strings representing business categories. \\ \hline
+\texttt{hours} & \texttt{dict} & Key-value pairs of operating hours by day. \\ \hline
 \caption{\texttt{businesses} collection}
 \end{longtable}
 
 \item{\texttt{reviews}}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{10cm}|}
+\begin{longtable}{|p{3cm}|p{3cm}|p{10cm}|}
 \hline
 \textbf{Field Name} & \textbf{Type} & \textbf{Description} \\ \hline
 \texttt{review\_id} & \texttt{string} & Unique identifier for the review (22 characters). \\ \hline
 \texttt{user\_id} & \texttt{string} & Unique identifier for the user who wrote the review. \\ \hline
 \texttt{business\_id} & \texttt{string} & Unique identifier for the business the review is written for. \\ \hline
 \texttt{stars} & \texttt{integer} & Star rating given in the review. \\ \hline
-\texttt{date} & \texttt{string} & Date of the review in the format YYYY-MM-DD. \\ \hline
+\texttt{date} & \texttt{DateTime} & Date of the review (format: YYYY-MM-DD HH:MM:SS). \\ \hline
 \texttt{text} & \texttt{string} & The text of the review. \\ \hline
 \texttt{useful} & \texttt{integer} & Number of useful votes received by the review. \\ \hline
 \texttt{funny} & \texttt{integer} & Number of funny votes received by the review. \\ \hline
@@ -571,30 +571,29 @@ Individual collections have the following shape:
 \end{longtable}
 
 \item{\texttt{users}}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{10cm}|}
+\begin{longtable}{|p{3cm}|p{3.5cm}|p{10cm}|}
 \hline
 \textbf{Field Name} & \textbf{Type} & \textbf{Description} \\ \hline
 \texttt{user\_id} & \texttt{string} & Unique identifier for the user (22 characters). \\ \hline
 \texttt{name} & \texttt{string} & User's first name. \\ \hline
 \texttt{review\_count} & \texttt{integer} & Number of reviews written by the user. \\ \hline
-\texttt{yelping\_since} & \texttt{string} & Date the user joined Yelp in the format YYYY-MM-DD. \\ \hline
-\texttt{friends} & \texttt{array} & Array of user IDs representing the user's friends. \\ \hline
+\texttt{yelping\_since} & \texttt{DateTime} & Date the user joined Yelp (format: YYYY-MM-DD HH:MM:SS).\\ \hline
+\texttt{friends} & \texttt{array[string]} & Array of user IDs representing the user's friends. \\ \hline
 \texttt{useful} & \texttt{integer} & Number of useful votes sent by the user. \\ \hline
 \texttt{funny} & \texttt{integer} & Number of funny votes sent by the user. \\ \hline
 \texttt{cool} & \texttt{integer} & Number of cool votes sent by the user. \\ \hline
 \texttt{fans} & \texttt{integer} & Number of fans the user has. \\ \hline
-\texttt{elite} & \texttt{array} & Years the user was marked as elite. \\ \hline
+\texttt{elite} & \texttt{array[int]} & Years the user was marked as elite. \\ \hline
 \texttt{average\_stars} & \texttt{float} & User's average star rating across all reviews. \\ \hline
-\texttt{compliments} & \texttt{object} & Count of compliments received by category (e.g., \texttt{hot}, \texttt{funny}). \\ \hline
 \caption{\texttt{users} collection}
 \end{longtable}
 
 \item{\texttt{checkins}}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{10cm}|}
+\begin{longtable}{|p{3cm}|p{3.5cm}|p{10cm}|}
 \hline
 \textbf{Field Name} & \textbf{Type} & \textbf{Description} \\ \hline
 \texttt{business\_id} & \texttt{string} & Unique identifier for the business (22 characters). \\ \hline
-\texttt{date} & \texttt{string} & Comma-separated list of timestamps (format: YYYY-MM-DD HH:MM:SS). \\ \hline
+\texttt{date} & \texttt{array[DateTime]} & Comma-separated list of timestamps (format: YYYY-MM-DD HH:MM:SS). \\ \hline
 \caption{\texttt{checkins} collection}
 \end{longtable}
 
@@ -676,10 +675,10 @@ The output is:
 \section{Objective}
 Sentiment analysis was not the first thing done after the dataset was loaded. The majority of the queries were performed, and, upon having analysed their results, the idea of applying sentiment analysis came up. 
 
-The ultimate goal was to bridge the gap between quantitative (stars) and qualitative (text) feedback to provide insights into user reviews. For example, by exploring the relationship between review sentiment and star ratings, I could assess how well the sentiment in text aligns with the corresponding star rating; cases where positive sentiment accompanies a low star rating, or vice versa, might provide insights of biases into user behaviour. Or, by segmenting users based on the typical sentiment of their reviews, I could assist businesses in better interpreting customer feedback. 
+The ultimate goal was to bridge the gap between quantitative (stars) and qualitative (text) feedback to provide insights into user reviews. For example, by exploring the relationship between review sentiment and star ratings, one could assess how well the sentiment in text aligns with the corresponding star rating; cases where positive sentiment accompanies a low star rating, or vice versa, might provide insights of biases into user behaviour. Or, by segmenting users based on the typical sentiment of their reviews, one could assist businesses in better interpreting customer feedback. 
 
 \section{Methodology}
-In this section, we present how sentiment analysis pipeline was integrated with MongoDB existing collections. 
+In this section, I present how sentiment analysis pipeline was integrated with MongoDB existing collections. 
 
 \subsection{Data extraction}
 Firstly, data had to be retrieved and put in a DataFrame. A simple MongoDB query was written and executed:
@@ -723,7 +722,7 @@ if self.device == "cuda":
     self.model = self.model.half()
 \end{verbatim}
 
-Dataset consisted of about $7$ million reviews and all of them needed to be processed to have a good result, so batching and chunking strategies were applied:
+Dataset consisted of about $7$ million reviews and all of them needed to be processed to have good results, so batching and chunking strategies were applied:
 \begin{itemize}
     \item Chunks: large portions of the dataset (e.g. $10,000$ reviews) that were loaded into memory and stored in CSV file at once;
     \item (Mini-) Batches: smaller groups (e.g. $512$ reviews) within each chunk that were processed together by the GPU.
@@ -749,7 +748,7 @@ analyzer.process_reviews(reviews,
                          "sentiment_results.csv", 10000)
 \end{minted}
 
-where \texttt{max\_length} is the maximum number of tokens in which text will be split up by the tokenizer. The model was trained and fine-tuned with sequences of maximum length of $512$, so all values below should be fine. By inspecting the distribution of number of tokens per reviews, $256$ seemed a good compromise between performance and expressiveness:
+where \texttt{max\_length} is the maximum number of tokens in which text was split up by the tokenizer. The model was trained and fine-tuned with sequences of maximum length of $512$, so all values below should be fine. By inspecting the distribution of number of tokens per reviews, $256$ seemed a good compromise between performance and expressiveness:
 
 \bigskip
 
@@ -879,7 +878,7 @@ db["businesses_merged"].aggregate([
 
 \bigskip
 
-This is query a clear example of applying NoSQL principles (in particular, document embedding), as it uses documents with sub-collections and deconstructs nested arrays using \texttt{\$unwind}. In contrast, the following query is more aligned with traditional SQL principles, as it relies on \texttt{\$lookup} to join collections:
+This query is a clear example of applying NoSQL principles (in particular, document embedding), as it uses documents with sub-collections and deconstructs nested arrays using \texttt{\$unwind}. In contrast, the following query is more aligned with traditional SQL principles, as it relies on \texttt{\$lookup} to join collections:
 
 \bigskip
     
@@ -964,7 +963,7 @@ On the other hand, categories like \textit{"Home Services"} ($238,255$ reviews, 
 A possible conclusion is that, even if the first categories may still offer growth opportunities, new investments would probably have more success in the others. For niche opportunities, categories with fewer businesses but steady demand, such as "Shopping", could also be worth exploring. 
 
 \section{Query 2: for each category, find the most polarizing business}
-We say that a business is \textit{"polarizing"} if it is one with high variance in star rating. The objective of this query was to identify, for each category, the most polarizing business.
+A business is said to be \textit{"polarizing"} if it is one with high variance in star rating. The objective of this query was to identify, for each category, the most polarizing business.
 
 For this query, \texttt{\$stdDevPop} was employed.
 
@@ -993,14 +992,12 @@ db["reviews"].aggregate([
                 "category" : "$categories"
             },
             "name" : {
-                #"first" operator is used to keep the first element retreived in grouping stage
                 "$first" : "$name"
             },
             "avg_stars" : {
                 "$avg": "$reviews.stars"
             },
             "variance" : {
-                #"stdDevPop" operator is used to compute the variance
                 "$stdDevPop": "$reviews.stars" 
             },
             "num_reviews" : {
@@ -1077,12 +1074,12 @@ The entire DataFrame is the following:
 
 \bigskip
 
-In the query, only businesses with at least 50 reviews were selected to minimize potential bias in the variance. Notably, the \textit{"restaurants"} category stands out as one of those with the highest variance: this is reasonable because restaurants cater to a wide range of customer preferences that leads to greater variability in reviews. Also, the categories \textit{"pets"} and \textit{"medical centers"} show high variance. For the first, this could be due to the emotional weight of customers experience with pet services. For the latter, the high variance might come from from the critical nature of healthcare services, where individual experiences can vary dramatically based on the quality of care, wait times, or outcomes.
+In the query, only businesses with at least 50 reviews were selected to minimize potential bias in the variance. Notably, the \textit{"restaurants"} category stands out as one of those with the highest variance: this is reasonable because restaurants cater to a wide range of customer preferences that leads to greater variability in reviews. Also, the categories \textit{"pets"} and \textit{"medical centers"} show high variance. For the first, this could be due to the emotional weight of customers experience with pet services. For the latter, it might come from from the critical nature of healthcare services, where individual experiences can vary dramatically based on the quality of care, wait times, or outcomes.
 
 Note that the number of reviews and the average star ratings are relatively consistent across categories: this is important because it means that a uniform sample was chosen. 
 
 \section{Query 3: find in which city a chain of businesses performs the best}
-A chain of businesses is a set of \texttt{business\_id} with the same \texttt{name} but different \texttt{city}. The goal of this query is to discover in which city a chain of businesses performs the best. Note that in a city there could be more than one \texttt{business\_id} with the same name.
+A chain of businesses is a set of \texttt{business\_id} with the same \texttt{name} but different \texttt{city}. The goal of this query was to discover in which city a chain of businesses performs the best. Note that in a city there could be more than one \texttt{business\_id} with the same name.
 
 In the first step of the query, all the necessary documents were retrieved using MongoDB:
 \begin{itemize}
@@ -1494,7 +1491,7 @@ The distribution of reviews is stable across day and night. The mean difference 
 \section{Query 6: friends have similar ratings?}
 This query was designed to examine the similarity in rating behaviours among friends by focusing on businesses they have both reviewed. Such similarity was quantified in terms of difference between average review stars.
 
-As done in the previous queries, I proceeded with a two-steps query. In the first one, all relevant documents were shaped and retrieved:
+As done in the previous queries, I proceeded in two steps. In the first one, all relevant documents were shaped and retrieved:
 \begin{itemize}
     \item \texttt{avg\_rating}: for each \texttt{user\_id} and \texttt{business\_id}, average star rating was computed. 
 
@@ -1664,7 +1661,7 @@ To better understand the reasoning behind this query, the structure of the docum
 }
 \end{lstlisting}
 
-\item \texttt{\$project}: \texttt{reviews} and \texttt{friend\_reviews} arrays were removed.
+\item \texttt{\$project}: \texttt{reviews} and \texttt{friend\_reviews} arrays are removed.
 
 \item \texttt{\$addFields}: with \texttt{\$filter} entries where users share no common reviews are removed. Structure is same as previous.
 
@@ -1708,7 +1705,7 @@ avg_rating.reset_index()\
 
 \bigskip
 
-Then, for each document in \texttt{common\_reviewed} I retrieved ratings for both the user and one of his / her friend (there could be more than one commonly reviewed businesses) and their averages were computed: 
+Then, for each document in \texttt{common\_reviewed}, I retrieved ratings for both the user and one of his / her friend (there could be more than one commonly reviewed businesses) and their averages were computed: 
 
 \bigskip 
 
@@ -1751,7 +1748,7 @@ The following histogram shows the results:
 
 \bigskip
 
-The distribution is centered around zero, which suggests that users and their friends tend to give similar ratings: with probability of $0.35$, the $\Delta$ it's exactly in $0$-bin and if we consider $-1$ to $1$ bins, about $0.75$ of total friend pairs are covered. There are, however, a few cases where the differences in ratings are more extreme, ranging from $-4$ to $+4$ (users either rated a business significantly higher or lower than their friends). Despite these deviations, the red dashed line, representing the mean difference, lies precisely at zero. 
+The distribution is centered around zero, which suggests that users and their friends tend to give similar ratings: with probability of $0.35$, the $\Delta$ it's exactly in $0$-bin and if we consider $-1$ to $1$ bins, about $0.75$ of total friend pairs are covered. There are, however, a few cases where the differences in ratings are more extreme, ranging from $-4$ to $+4$ (users either rated a business significantly higher or lower than their friends). Despite these deviations, the red dashed line, representing the mean difference, lies at zero. 
 
 \section{Query 7: yearly growth rate of businesses}
 The growth rate of a business is defined as $g_{B, i}=\frac{n_{B, i + 1} - n_{B, i}}{n_{B, i}}$ where $n_{B, i}$ is the number of check-ins for business $B$ in year $i$. The objective of this query was to compute the growth rate of all businesses such that $\exists i, j \in [\texttt{start\_date}, \texttt{end\_date}] \,\, | \,\, i < j \land \forall k \in [i, j] \,\, | \,\, n_{B, k} > 0$ with \texttt{start\_date} and \texttt{end\_date} query parameters.
@@ -1836,8 +1833,8 @@ For the business with the longest sequence of registered check-ins, both $n_{B, 
 
 \bigskip
 
-\section{Query 8: city with lowest sentiment for each category}
-For each category, the cities with the lowest sentiment for that category was determined. To have a less biased result, only categories with sufficient number of positive and negative reviews (at least $50$ for each one) were considered.
+\section{Query 8: cities with lowest sentiment for each category}
+For each category, the cities with the lowest sentiment for that category were determined. To have a less biased result, only categories with sufficient number of positive and negative reviews (at least $50$ for each one) were considered.
 
 \bigskip
 
@@ -1945,7 +1942,7 @@ For all categories, the sentiment distribution varies significantly between citi
 In addition, cities with higher total reviews often have larger disparities between positive and negative sentiments, suggesting that review counts and quality perceptions may correlate, with popular locations potentially attracting more polarized opinions.
 
 \section{Query 9: number of businesses for each bucket of possible reviews ratings}
-The aim of this query was to count the number of businesses for each bucket (or bin) of possible review ratings. In particular, we defined:
+The aim of this query was to count the number of businesses for each bucket (or bin) of possible review ratings. In particular, I defined:
 $$\texttt{buckets} = [0, 0.5, ..., 4.5, 5]$$
 and counted how many businesses had their average review rating in $[\texttt{buckects[i]}, \\ \texttt{buckets[i + 1]})$, using \texttt{\$bucket} operator.
 
@@ -2150,7 +2147,7 @@ From it, two histograms were derived:
 
 \bigskip
 
-The analysis reveals a clear relationship between sentiment and review stars. Reviews with $4$ or $5$ stars are predominantly classified as positive, while those with $1$ or $2$ stars are mostly negative, as one could intuitively think. Three-star reviews are equally classified as positive or negative: this means that we can use $3$ as threshold to discriminate outlayer reviews (see \ref{query_11}).
+The analysis reveals a clear relationship between sentiment and review stars. Reviews with $4$ or $5$ stars are predominantly classified as positive, while those with $1$ or $2$ stars are mostly negative, as one could intuitively think. Three-star reviews are equally classified as positive or negative: this means that I can use $3$ as threshold to discriminate outlayer reviews (see \ref{query_11}).
 
 \section{Query 11: search for reviews outlayers}
 \label{query_11}

@@ -117,23 +117,13 @@
 			\\
 			{{\color{bluepoli} \singlespacing \huge \bfseries \thesistitle \par}}	
 			\vspace{1.5cm}
-			{\color{black} \Large {Author(s):} \bfseries{\nameA}} \\ \\
-			\vspace{0.51cm}
-			{\color{black} \hspace{6.3em} \Large \bfseries{\nameB}} \\
-			\vspace{0.51cm}
-			{\color{black} \hspace{6.3em} \Large \bfseries{\nameC}} \\
-			\vspace{0.51cm}
-			{\color{black} \hspace{6.3em} \Large \bfseries{\nameD}} \\
-			\vspace{0.51cm}
-			{\color{black} \hspace{6.3em} \Large \bfseries{\nameE}} \\
-			\\
+			{\color{black} \Large {Author:} \bfseries{\nameA}} \\ \\
 			\vspace{0.51cm}
 			\\
 			{\color{black} \Large {Group Number:} \bfseries{\groupnumber}} \\ \\
 			\end{minipage}
-			\\
-			\vspace*{\fill}
-			\\
+            \vspace{0.51cm}
+            \\
 			\begin{minipage}{0.85\textwidth}
 			\normalsize{
 			Academic Year: {\academicyear}
