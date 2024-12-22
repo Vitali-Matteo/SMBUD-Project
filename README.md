@@ -63,7 +63,6 @@ The project consists of three main components:
   - pytorch
   - transformers
   - tqdm
-  - wordcloud
 
 ## Getting Started
 
