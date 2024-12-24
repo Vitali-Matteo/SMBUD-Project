@@ -6,7 +6,7 @@ This repository contains the project work for the Systems and Methods For Big an
 
 The project consists of three main components:
 1. Data wrangling and loading
-2. MongoDB queries with reesults visualization and interpretation
+2. MongoDB queries with results visualization and interpretation
 3. Sentiment analysis on reviews
 
 ## Repository Structure
@@ -15,7 +15,7 @@ The project consists of three main components:
 
   Contains links to the dataset and CSV files with sentiment analysis results
 
-- **Images/**
+- **Pictures/**
 
   High-resolution images used in the project report
 
