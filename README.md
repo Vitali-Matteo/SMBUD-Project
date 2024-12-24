@@ -13,7 +13,7 @@ The project consists of three main components:
 
 - **Dump/**
 
-  Contains links to the dataset and CSV files with sentiment analysis results
+  Contains links to DB dump and CSV file with sentiment analysis results (you'll need to use mongorestore to put the collections in the DB)
 
 - **Pictures/**
 
@@ -44,7 +44,7 @@ The project consists of three main components:
 
 - **Sentiment_analysis.ipynb**
 
-  Jupyter notebook containing sentiment analysis implementation and results
+  Jupyter notebook containing sentiment analysis implementation and DB updates
 
 - **SMBUD Project - Matteo Vitali.pdf**
 
@@ -66,11 +66,18 @@ The project consists of three main components:
 
 ## Getting Started
 
-1. Clone this repository
-2. Download the Yelp dataset using the link provided in the Dump folder
-3. Install required dependencies
-4. Run the preprocessing notebook first
-5. Execute queries and sentiment analysis notebooks
+If you want to start from scratch:
+  1. Clone this repository
+  2. Download the Yelp dataset using the link provided in the report
+  3. Install required dependencies 
+  4. Run the preprocessing notebook first
+  5. Execute queries and sentiment analysis notebooks (or, download the sentiment analysis results using the provided link in Dump folder)
+
+If you want to start from the dumped DB:
+  1. Clone this repository
+  2. Download the dump using the link provided in the Dump folder
+  3. Install required dependencies
+  4. Execute queries and sentiment analysis notebooks (or, download the sentiment analysis results using the provided link in Dump folder)
 
 ## Author
 
